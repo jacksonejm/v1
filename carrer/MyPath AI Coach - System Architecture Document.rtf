@@ -1,0 +1,1998 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;}
+{\colortbl;\red255\green255\blue255;\red16\green16\blue16;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c7843\c7843\c7451;\cssrgb\c100000\c100000\c100000;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 # MyPath AI Coach - System Architecture Document\
+\
+## 1. Overview\
+\
+The MyPath AI Coach is an AI-powered career advisor integrated into the onboarding flow of the MyPath mobile application. It provides personalized assistance to users, helps gather richer user data, and differentiates the application from competitors by offering dynamic, contextual guidance instead of static forms.\
+\
+This document outlines the complete system architecture, technology stack, integration points, and implementation requirements for the MyPath AI Coach.\
+\
+## 2. Architecture Diagram\
+\
+```\
+\uc0\u9556 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9559 \
+\uc0\u9553   SwiftUI Views   \u9553 \u9472  publishes stepId & form changes\
+\uc0\u9562 \u9552 \u9552 \u9572 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9565 \
+   \uc0\u9474  Combine\
+   \uc0\u9660 \
+\uc0\u9556 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9572 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9559 \
+\uc0\u9553  ConversationStore\u9553 \u9472  SSE + Core Data + retry logic\
+\uc0\u9562 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9575 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9565 \
+   \uc0\u9474  HTTPS / SSE\
+   \uc0\u9660 \
+\uc0\u9556 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9559 \
+\uc0\u9553  Responses API    \u9553 \
+\uc0\u9562 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9572 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9565 \
+   \uc0\u9474  Agents SDK run-loop\
+   \uc0\u9660 \
+\uc0\u9556 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9559      \u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9553    GPT-4o Model   \u9553 \u9472 \u9472 \u9472 \u9654  \u9474   Tools    \u9474 \u9472 \u9472 \u9472 \u9654  Supabase / SendGrid \'85\
+\uc0\u9562 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9552 \u9565      \u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9496 \
+```\
+\
+Offline path: ConversationStore \uc0\u8594  Core-ML adapter \u8594  Llama 3 local model \u8594  overlay.\
+\
+## 3. Technology Stack\
+\
+### 3.1 Client-Side (iOS)\
+\
+| Component | Technology | Version | Purpose |\
+|-----------|------------|---------|---------|\
+| UI Framework | SwiftUI | iOS 15+ | User interface components and views |\
+| State Management | Combine | iOS 13+ | Reactive state management, data binding |\
+| Networking | URLSession + Combine | iOS 13+ | API communication, SSE handling |\
+| Local Storage | Core Data | iOS 13+ | Persisting conversations and offline data |\
+| Speech | AVFoundation, SFSpeechRecognizer | iOS 14+ | Text-to-Speech and Speech-to-Text |\
+| Offline ML | Core ML | iOS 14+ | Local language processing for offline mode |\
+| Network Monitoring | NWPathMonitor | iOS 12+ | Detect network availability |\
+| Analytics | PostHog SDK | 2.0.0+ | User interaction tracking |\
+\
+### 3.2 Server-Side\
+\
+| Component | Technology | Version | Purpose |\
+|-----------|------------|---------|---------|\
+| Language Model | OpenAI GPT-4o | Latest | Primary AI model for conversational interface |\
+| Embeddings | OpenAI Ada-002 | Latest | Generate vector embeddings for career matching |\
+| Agent Framework | OpenAI Assistants API | Latest | Orchestrates conversations and tool usage |\
+| Database | Supabase PostgreSQL | Latest | Profile data and vector storage |\
+| Vector Search | pgvector | Latest | Similarity search for career matching |\
+| Hosting | Supabase Functions | Latest | Serverless backend functions |\
+| Monitoring | LangSmith | Latest | Tracking agent performance and debugging |\
+| Content Moderation | OpenAI Moderation API | Latest | Content filtering and safety |\
+\
+### 3.3 Development & Operations\
+\
+| Component | Technology | Purpose |\
+|-----------|------------|---------|\
+| Source Control | GitHub | Code versioning and collaboration |\
+| CI/CD | GitHub Actions | Automated testing and deployment |\
+| Issue Tracking | Jira | Project management and issue tracking |\
+| Testing | XCTest | Unit and integration testing |\
+| Monitoring | Supabase Dashboard | Database monitoring |\
+| Analytics | PostHog | User engagement analytics |\
+\
+## 4. Component Specifications\
+\
+### 4.1 SwiftUI Views Layer\
+\
+**Key Components:**\
+- `AIAssistantOverlay.swift` - Primary chat interface overlay\
+- `VoiceAssistantView.swift` - Voice interaction overlay \
+- `OnboardingView.swift` - Main onboarding flow that hosts the assistant\
+\
+**Integration Points:**\
+- Publishes current onboarding step ID to the ConversationStore\
+- Displays chat messages streamed from ConversationStore\
+- Reports form field changes for contextual awareness\
+\
+**Implementation Requirements:**\
+- Display a floating "Assistant" button on all onboarding screens\
+- Render chat bubbles with typing indicators for AI responses\
+- Support voice input/output with appropriate animations\
+- Maintain responsive design across different device sizes\
+\
+### 4.2 ConversationStore Layer\
+\
+**Key Components:**\
+- `ConversationStore.swift` - Core store for chat state\
+- `AIAssistantViewModel.swift` - Business logic for the assistant\
+- `NetworkMonitor.swift` - Monitors connection status\
+\
+**Integration Points:**\
+- Subscribes to SwiftUI view state changes via Combine\
+- Manages conversation history with Core Data\
+- Connects to Responses API via HTTPS/SSE\
+\
+**Implementation Requirements:**\
+- Persist conversations for continuity between sessions\
+- Implement retry logic for failed API requests\
+- Handle offline detection and mode switching\
+- Maintain message ordering and typing indicators\
+\
+### 4.3 Responses API\
+\
+**Key Components:**\
+- `OpenAIService.swift` - Client-side API integration\
+- Serverless functions (hosted on Supabase)\
+\
+**Integration Points:**\
+- Makes calls to OpenAI Assistants API\
+- Handles streaming responses via Server-Sent Events (SSE)\
+- Processes tool calls and function invocations\
+\
+**Implementation Requirements:**\
+- Set up OpenAI API integration with proper authentication\
+- Configure streaming response handling\
+- Implement function calling interface\
+- Add rate limiting and error handling\
+\
+### 4.4 AI Model & Tools\
+\
+**Key Components:**\
+- `ToolRegistry.swift` - Manages available tools\
+- Various tool implementations (Career, Profile, etc.)\
+- System prompt and function definitions\
+\
+**Integration Points:**\
+- Connects to Supabase for data operations\
+- Interfaces with SendGrid for human escalations\
+- Retrieves and stores user profile data\
+\
+**Implementation Requirements:**\
+- Implement tool classes with proper error handling\
+- Define function schemas for OpenAI's function calling\
+- Set up proper authentication for external services\
+- Configure comprehensive system prompts\
+\
+### 4.5 Supabase Integration\
+\
+**Key Components:**\
+- `SupabaseService.swift` - Client-side Supabase API wrapper\
+- PostgreSQL database with pgvector extension\
+- RLS (Row Level Security) policies for data protection\
+\
+**Integration Points:**\
+- Stores and retrieves user profile information\
+- Performs vector similarity search for career matching\
+- Authenticates users and manages sessions\
+\
+**Implementation Requirements:**\
+- Set up proper database schema with vector columns\
+- Configure RPC functions for vector search\
+- Implement Row Level Security policies\
+- Set up authentication flow\
+\
+## 5. Data Models\
+\
+### 5.1 Conversation Model\
+\
+```swift\
+struct ChatMessage: Identifiable, Codable \{\
+    let id: UUID\
+    let content: String\
+    let isUser: Bool\
+    let timestamp: Date\
+    var toolResults: [String: Any]?\
+\}\
+\
+struct Conversation: Identifiable, Codable \{\
+    let id: UUID\
+    let userId: String?\
+    let startTimestamp: Date\
+    var messages: [ChatMessage]\
+    var step: String  // Current onboarding step\
+    var status: ConversationStatus\
+\}\
+\
+enum ConversationStatus: String, Codable \{\
+    case active\
+    case completed\
+    case error\
+\}\
+```\
+\
+### 5.2 User Profile Model\
+\
+```swift\
+struct UserProfile: Codable \{\
+    let userId: String\
+    var riasecResponses: [String: Int]\
+    var technicalSkills: [String: Double]\
+    var socialSkills: [String: Double]\
+    var physicalCapabilities: [String: Double]\
+    var activities: [String]\
+    var interests: [String]\
+    var skills: [String]\
+    var educationLevel: EducationLevel\
+    var yearsExperience: Double\
+    var skillLevel: Double\
+\}\
+```\
+\
+### 5.3 Career Model\
+\
+```swift\
+struct Career: Identifiable, Codable \{\
+    let id: UUID\
+    let title: String\
+    let description: String\
+    let requirements: [String]\
+    let salary: String\
+    let growth: String\
+    let embedding: [Double]?  // Vector embedding for similarity search\
+\}\
+```\
+\
+## 6. Database Schema\
+\
+### 6.1 Supabase Tables\
+\
+#### profiles\
+\
+| Column | Type | Description |\
+|--------|------|-------------|\
+| id | uuid | Primary key |\
+| user_id | text | References auth.users.id |\
+| created_at | timestamptz | Creation timestamp |\
+| updated_at | timestamptz | Last update timestamp |\
+| data | jsonb | Profile data in JSON format |\
+\
+#### careers\
+\
+| Column | Type | Description |\
+|--------|------|-------------|\
+| id | uuid | Primary key |\
+| title | text | Career title |\
+| description | text | Career description |\
+| requirements | text[] | Array of requirements |\
+| salary | text | Salary range |\
+| growth | text | Growth prospects |\
+| embedding | vector(1536) | Vector embedding for similarity search |\
+\
+#### conversations\
+\
+| Column | Type | Description |\
+|--------|------|-------------|\
+| id | uuid | Primary key |\
+| user_id | text | References auth.users.id |\
+| created_at | timestamptz | Creation timestamp |\
+| updated_at | timestamptz | Last update timestamp |\
+| messages | jsonb | Array of messages |\
+| step | text | Onboarding step |\
+| status | text | Conversation status |\
+\
+### 6.2 PostgreSQL Functions\
+\
+#### match_careers\
+\
+```sql\
+CREATE OR REPLACE FUNCTION match_careers(\
+  query_embedding vector(1536),\
+  match_threshold float,\
+  match_count int,\
+  query text\
+)\
+RETURNS TABLE (\
+  id uuid,\
+  title text,\
+  description text,\
+  requirements text[],\
+  salary text,\
+  growth text,\
+  match float\
+)\
+LANGUAGE plpgsql\
+AS $$\
+BEGIN\
+  RETURN QUERY\
+  SELECT\
+    c.id,\
+    c.title,\
+    c.description,\
+    c.requirements,\
+    c.salary,\
+    c.growth,\
+    1 - (c.embedding <=> query_embedding) AS match\
+  FROM careers c\
+  WHERE 1 - (c.embedding <=> query_embedding) > match_threshold\
+  ORDER BY match DESC\
+  LIMIT match_count;\
+END;\
+$$;\
+```\
+\
+#### update_user_profile\
+\
+```sql\
+CREATE OR REPLACE FUNCTION update_user_profile(\
+  user_id text,\
+  field text,\
+  value jsonb\
+)\
+RETURNS json\
+LANGUAGE plpgsql\
+SECURITY DEFINER\
+AS $$\
+DECLARE\
+  result json;\
+BEGIN\
+  UPDATE profiles\
+  SET data = jsonb_set(data, ARRAY[field], value)\
+  WHERE profiles.user_id = update_user_profile.user_id;\
+  \
+  IF FOUND THEN\
+    result := json_build_object('success', true);\
+  ELSE\
+    result := json_build_object('success', false);\
+  END IF;\
+  \
+  RETURN result;\
+END;\
+$$;\
+```\
+\
+## 7. API Specifications\
+\
+### 7.1 OpenAI API\
+\
+**Base URL:** `https://api.openai.com/v1`\
+\
+#### Chat Completions Endpoint\
+\
+- **URL:** `/chat/completions`\
+- **Method:** `POST`\
+- **Headers:**\
+  - `Authorization: Bearer YOUR_API_KEY`\
+  - `Content-Type: application/json`\
+- **Request Body:**\
+```json\
+\{\
+  "model": "gpt-4o",\
+  "messages": [\
+    \{"role": "system", "content": "System prompt..."\},\
+    \{"role": "user", "content": "User message..."\}\
+  ],\
+  "tools": [\
+    \{\
+      "type": "function",\
+      "function": \{\
+        "name": "match_career",\
+        "description": "Find careers matching a query",\
+        "parameters": \{\
+          "type": "object",\
+          "properties": \{\
+            "query": \{\
+              "type": "string",\
+              "description": "The search query"\
+            \},\
+            "k": \{\
+              "type": "integer",\
+              "description": "Number of results"\
+            \}\
+          \},\
+          "required": ["query"]\
+        \}\
+      \}\
+    \}\
+  ],\
+  "stream": true\
+\}\
+```\
+\
+### 7.2 Supabase API\
+\
+**Base URL:** `https://YOUR_PROJECT_ID.supabase.co`\
+\
+#### Match Careers Endpoint\
+\
+- **URL:** `/rest/v1/rpc/match_careers`\
+- **Method:** `POST`\
+- **Headers:**\
+  - `apikey: YOUR_SUPABASE_KEY`\
+  - `Authorization: Bearer YOUR_SUPABASE_KEY`\
+  - `Content-Type: application/json`\
+- **Request Body:**\
+```json\
+\{\
+  "query_embedding": [0.1, 0.2, ...],\
+  "match_threshold": 0.5,\
+  "match_count": 3,\
+  "query": "data science"\
+\}\
+```\
+\
+#### Update User Profile Endpoint\
+\
+- **URL:** `/rest/v1/rpc/update_user_profile`\
+- **Method:** `POST`\
+- **Headers:**\
+  - `apikey: YOUR_SUPABASE_KEY`\
+  - `Authorization: Bearer YOUR_SUPABASE_KEY`\
+  - `Content-Type: application/json`\
+- **Request Body:**\
+```json\
+\{\
+  "user_id": "auth0|123456",\
+  "field": "interests",\
+  "value": ["programming", "data science"]\
+\}\
+```\
+\
+## 8. Implementation Details\
+\
+### 8.1 Core Files in Existing App\
+\
+The MyPath AI Coach needs to be integrated with the following existing files:\
+\
+1. `AIAssistantViewModel.swift` - Update to conform to new architecture\
+2. `AIAssistantOverlay.swift` - Enhance with SSE and tool support\
+3. `OnboardingView.swift` - Add assistant button\
+4. `chat.swift` - Refactor into separate components\
+\
+### 8.2 New Files to Create\
+\
+The following new files need to be created:\
+\
+1. `ConversationStore.swift` - Core conversation state manager\
+2. `OpenAIService.swift` - API integration for OpenAI\
+3. `SupabaseService.swift` - API integration for Supabase\
+4. `NetworkMonitor.swift` - Network availability detection\
+5. `ToolRegistry.swift` - Tool management and registration\
+6. `CareerMatchTool.swift` - Tool for career matching\
+7. `UserProfileTool.swift` - Tool for profile updates\
+8. `FieldValidationTool.swift` - Tool for field validation\
+9. `SpeechProvider.swift` - Voice interface support\
+\
+### 8.3 Code Example: ConversationStore\
+\
+```swift\
+import Foundation\
+import Combine\
+import CoreData\
+\
+@MainActor\
+class ConversationStore: ObservableObject \{\
+    // Published properties\
+    @Published var currentConversation: Conversation?\
+    @Published var messages: [ChatMessage] = []\
+    @Published var isLoading = false\
+    @Published var error: Error?\
+    \
+    // Services\
+    private let openAIService = OpenAIService()\
+    private let networkMonitor = NetworkMonitor.shared\
+    private let persistenceController = PersistenceController.shared\
+    \
+    // Stream handling\
+    private var messageStream: AnyCancellable?\
+    private var retryCount = 0\
+    private let maxRetries = 3\
+    \
+    // Initialize with optional existing conversation\
+    init(conversation: Conversation? = nil) \{\
+        if let conversation = conversation \{\
+            self.currentConversation = conversation\
+            self.messages = conversation.messages\
+        \} else \{\
+            createNewConversation()\
+        \}\
+        \
+        setupNetworkMonitoring()\
+    \}\
+    \
+    private func setupNetworkMonitoring() \{\
+        networkMonitor.$isConnected\
+            .removeDuplicates()\
+            .sink \{ [weak self] isConnected in\
+                if !isConnected \{\
+                    self?.handleOfflineMode()\
+                \}\
+            \}\
+            .store(in: &cancellables)\
+    \}\
+    \
+    func createNewConversation() \{\
+        currentConversation = Conversation(\
+            id: UUID(),\
+            userId: UserManager.shared.currentUserId,\
+            startTimestamp: Date(),\
+            messages: [],\
+            step: "",\
+            status: .active\
+        )\
+        messages = []\
+    \}\
+    \
+    // Add a user message and get AI response\
+    func sendMessage(_ content: String, forStep step: String) async \{\
+        // Add user message\
+        let userMessage = ChatMessage(\
+            id: UUID(),\
+            content: content,\
+            isUser: true,\
+            timestamp: Date()\
+        )\
+        \
+        messages.append(userMessage)\
+        \
+        // Update conversation\
+        if var conversation = currentConversation \{\
+            conversation.messages.append(userMessage)\
+            conversation.step = step\
+            currentConversation = conversation\
+            saveConversation()\
+        \}\
+        \
+        // Get AI response\
+        if networkMonitor.isConnected \{\
+            await getAIResponse(for: step)\
+        \} else \{\
+            await getOfflineResponse(content)\
+        \}\
+    \}\
+    \
+    private func getAIResponse(for step: String) async \{\
+        isLoading = true\
+        \
+        do \{\
+            // Start streaming response\
+            let systemPrompt = SystemPromptGenerator.generatePrompt(for: step)\
+            \
+            messageStream = openAIService.streamResponse(\
+                messages: messages,\
+                systemPrompt: systemPrompt\
+            )\
+            .receive(on: RunLoop.main)\
+            .sink(\
+                receiveCompletion: \{ [weak self] completion in\
+                    guard let self = self else \{ return \}\
+                    \
+                    self.isLoading = false\
+                    \
+                    if case .failure(let error) = completion \{\
+                        self.handleResponseError(error)\
+                    \} else \{\
+                        // Success - reset retry count\
+                        self.retryCount = 0\
+                    \}\
+                \},\
+                receiveValue: \{ [weak self] chunk in\
+                    guard let self = self else \{ return \}\
+                    \
+                    // Handle streaming chunk\
+                    self.handleResponseChunk(chunk)\
+                \}\
+            )\
+        \} catch \{\
+            handleResponseError(error)\
+        \}\
+    \}\
+    \
+    private func handleResponseChunk(_ chunk: ResponseChunk) \{\
+        switch chunk \{\
+        case .start:\
+            // Initialize a new AI message\
+            let newMessage = ChatMessage(\
+                id: UUID(),\
+                content: "",\
+                isUser: false,\
+                timestamp: Date()\
+            )\
+            messages.append(newMessage)\
+            \
+        case .content(let text):\
+            // Append to the last message\
+            if var lastMessage = messages.last, !lastMessage.isUser \{\
+                lastMessage.content += text\
+                messages[messages.count - 1] = lastMessage\
+                \
+                // Update conversation in Core Data\
+                if var conversation = currentConversation \{\
+                    conversation.messages = messages\
+                    currentConversation = conversation\
+                \}\
+            \}\
+            \
+        case .toolCall(let tool, let parameters):\
+            // Execute tool call\
+            Task \{\
+                await executeToolCall(tool: tool, parameters: parameters)\
+            \}\
+            \
+        case .end:\
+            // Finalize the message and save\
+            saveConversation()\
+        \}\
+    \}\
+    \
+    private func executeToolCall(tool: String, parameters: [String: Any]) async \{\
+        guard let toolInstance = ToolRegistry.shared.getTool(named: tool) else \{\
+            return\
+        \}\
+        \
+        do \{\
+            let result = try await toolInstance.execute(with: parameters)\
+            \
+            // Add tool result to the last message\
+            if var lastMessage = messages.last, !lastMessage.isUser \{\
+                var toolResults = lastMessage.toolResults ?? [:]\
+                toolResults[tool] = result\
+                lastMessage.toolResults = toolResults\
+                messages[messages.count - 1] = lastMessage\
+            \}\
+            \
+            // Track tool usage\
+            AnalyticsManager.shared.trackToolUsed(name: tool, parameters: parameters)\
+        \} catch \{\
+            // Handle tool execution error\
+            print("Tool execution error: \\(error)")\
+        \}\
+    \}\
+    \
+    private func handleResponseError(_ error: Error) \{\
+        self.error = error\
+        isLoading = false\
+        \
+        // Implement retry logic\
+        if retryCount < maxRetries \{\
+            retryCount += 1\
+            \
+            // Exponential backoff\
+            let delay = pow(2.0, Double(retryCount)) * 0.5\
+            \
+            Task \{\
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))\
+                await getAIResponse(for: currentConversation?.step ?? "")\
+            \}\
+        \} else \{\
+            // Max retries exceeded - add error message\
+            let errorMessage = ChatMessage(\
+                id: UUID(),\
+                content: "I'm having trouble connecting. Please try again later.",\
+                isUser: false,\
+                timestamp: Date()\
+            )\
+            messages.append(errorMessage)\
+            \
+            // Update conversation status\
+            if var conversation = currentConversation \{\
+                conversation.status = .error\
+                conversation.messages.append(errorMessage)\
+                currentConversation = conversation\
+                saveConversation()\
+            \}\
+            \
+            // Consider human escalation\
+            if error is OpenAIService.APIError \{\
+                escalateToHuman(reason: "API error after \\(maxRetries) retries")\
+            \}\
+        \}\
+    \}\
+    \
+    private func getOfflineResponse(_ userMessage: String) async \{\
+        isLoading = true\
+        \
+        // Use Core ML model for offline response\
+        if let adapter = CoreMLAdapter.shared \{\
+            do \{\
+                let response = try await adapter.generateResponse(to: userMessage)\
+                \
+                let offlineMessage = ChatMessage(\
+                    id: UUID(),\
+                    content: response,\
+                    isUser: false,\
+                    timestamp: Date()\
+                )\
+                \
+                messages.append(offlineMessage)\
+                \
+                // Update conversation\
+                if var conversation = currentConversation \{\
+                    conversation.messages.append(offlineMessage)\
+                    currentConversation = conversation\
+                    saveConversation()\
+                \}\
+            \} catch \{\
+                let errorMessage = ChatMessage(\
+                    id: UUID(),\
+                    content: "I'm currently in offline mode with limited capabilities. Please try again when you have an internet connection.",\
+                    isUser: false,\
+                    timestamp: Date()\
+                )\
+                messages.append(errorMessage)\
+            \}\
+        \} else \{\
+            // Fallback message if Core ML model isn't available\
+            let fallbackMessage = ChatMessage(\
+                id: UUID(),\
+                content: "I'm currently offline. Please try again when you have an internet connection.",\
+                isUser: false,\
+                timestamp: Date()\
+            )\
+            messages.append(fallbackMessage)\
+        \}\
+        \
+        isLoading = false\
+    \}\
+    \
+    private func handleOfflineMode() \{\
+        // Cancel any ongoing streams\
+        messageStream?.cancel()\
+        \
+        // Add offline notification if we were loading\
+        if isLoading \{\
+            let offlineMessage = ChatMessage(\
+                id: UUID(),\
+                content: "I've lost connection. I'll continue in offline mode with limited capabilities.",\
+                isUser: false,\
+                timestamp: Date()\
+            )\
+            messages.append(offlineMessage)\
+            isLoading = false\
+        \}\
+    \}\
+    \
+    private func saveConversation() \{\
+        guard let conversation = currentConversation else \{ return \}\
+        \
+        // Save to Core Data\
+        let context = persistenceController.container.viewContext\
+        \
+        let conversationEntity = ConversationEntity(context: context)\
+        conversationEntity.id = conversation.id\
+        conversationEntity.userId = conversation.userId\
+        conversationEntity.startTimestamp = conversation.startTimestamp\
+        conversationEntity.step = conversation.step\
+        conversationEntity.status = conversation.status.rawValue\
+        \
+        // Save messages\
+        if let messagesData = try? JSONEncoder().encode(conversation.messages) \{\
+            conversationEntity.messagesData = messagesData\
+        \}\
+        \
+        do \{\
+            try context.save()\
+        \} catch \{\
+            print("Failed to save conversation: \\(error)")\
+        \}\
+    \}\
+    \
+    private func escalateToHuman(reason: String) \{\
+        // Implement human escalation logic\
+        // This would typically send an email or create a support ticket\
+        print("Escalating to human: \\(reason)")\
+    \}\
+\}\
+```\
+\
+### 8.4 Code Example: SupabaseService\
+\
+```swift\
+import Foundation\
+import Combine\
+\
+class SupabaseService \{\
+    // Configuration\
+    private let supabaseUrl: String\
+    private let supabaseKey: String\
+    \
+    // Singleton instance\
+    static let shared = SupabaseService()\
+    \
+    private init() \{\
+        // Load from environment or configuration\
+        self.supabaseUrl = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String ?? ""\
+        self.supabaseKey = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_KEY") as? String ?? ""\
+    \}\
+    \
+    // MARK: - Headers\
+    private var headers: [String: String] \{\
+        return [\
+            "apikey": supabaseKey,\
+            "Authorization": "Bearer \\(supabaseKey)",\
+            "Content-Type": "application/json"\
+        ]\
+    \}\
+    \
+    // MARK: - Career Matching\
+    func matchCareers(query: String, limit: Int = 3) async throws -> [CareerMatch] \{\
+        // First, we need to get the embedding for the query\
+        let embedding = try await generateEmbedding(for: query)\
+        \
+        // Then search using the embedding in Supabase\
+        let body: [String: Any] = [\
+            "query_embedding": embedding,\
+            "match_threshold": 0.5,\
+            "match_count": limit,\
+            "query": query\
+        ]\
+        \
+        let jsonData = try JSONSerialization.data(withJSONObject: body)\
+        \
+        // Create the request\
+        guard let url = URL(string: "\\(supabaseUrl)/rest/v1/rpc/match_careers") else \{\
+            throw SupabaseError.invalidURL\
+        \}\
+        \
+        var request = URLRequest(url: url)\
+        request.httpMethod = "POST"\
+        \
+        for (key, value) in headers \{\
+            request.addValue(value, forHTTPHeaderField: key)\
+        \}\
+        \
+        request.httpBody = jsonData\
+        \
+        // Make the request\
+        let (data, response) = try await URLSession.shared.data(for: request)\
+        \
+        guard let httpResponse = response as? HTTPURLResponse else \{\
+            throw SupabaseError.invalidResponse\
+        \}\
+        \
+        guard httpResponse.statusCode == 200 else \{\
+            throw SupabaseError.requestFailed(statusCode: httpResponse.statusCode, \
+                                             message: String(data: data, encoding: .utf8) ?? "Unknown error")\
+        \}\
+        \
+        // Decode the response\
+        let decoder = JSONDecoder()\
+        return try decoder.decode([CareerMatch].self, from: data)\
+    \}\
+    \
+    // MARK: - User Profile\
+    func updateUserProfile(userId: String, field: String, value: Any) async throws -> Bool \{\
+        // Convert value to JSON\
+        let jsonValue: Any\
+        \
+        if let stringValue = value as? String \{\
+            jsonValue = stringValue\
+        \} else if let numberValue = value as? NSNumber \{\
+            jsonValue = numberValue\
+        \} else if let arrayValue = value as? [Any] \{\
+            jsonValue = arrayValue\
+        \} else if let dictValue = value as? [String: Any] \{\
+            jsonValue = dictValue\
+        \} else \{\
+            jsonValue = String(describing: value)\
+        \}\
+        \
+        let body: [String: Any] = [\
+            "user_id": userId,\
+            "field": field,\
+            "value": jsonValue\
+        ]\
+        \
+        let jsonData = try JSONSerialization.data(withJSONObject: body)\
+        \
+        // Create the request\
+        guard let url = URL(string: "\\(supabaseUrl)/rest/v1/rpc/update_user_profile") else \{\
+            throw SupabaseError.invalidURL\
+        \}\
+        \
+        var request = URLRequest(url: url)\
+        request.httpMethod = "POST"\
+        \
+        for (key, value) in headers \{\
+            request.addValue(value, forHTTPHeaderField: key)\
+        \}\
+        \
+        request.httpBody = jsonData\
+        \
+        // Make the request\
+        let (data, response) = try await URLSession.shared.data(for: request)\
+        \
+        guard let httpResponse = response as? HTTPURLResponse else \{\
+            throw SupabaseError.invalidResponse\
+        \}\
+        \
+        guard httpResponse.statusCode == 200 else \{\
+            throw SupabaseError.requestFailed(statusCode: httpResponse.statusCode, \
+                                             message: String(data: data, encoding: .utf8) ?? "Unknown error")\
+        \}\
+        \
+        // Parse the response\
+        struct UpdateResponse: Codable \{\
+            let success: Bool\
+        \}\
+        \
+        let decoder = JSONDecoder()\
+        let updateResponse = try decoder.decode(UpdateResponse.self, from: data)\
+        \
+        return updateResponse.success\
+    \}\
+    \
+    func getUserProfile(userId: String) async throws -> [String: Any] \{\
+        // Create the request\
+        guard let url = URL(string: "\\(supabaseUrl)/rest/v1/profiles?user_id=eq.\\(userId)") else \{\
+            throw SupabaseError.invalidURL\
+        \}\
+        \
+        var request = URLRequest(url: url)\
+        request.httpMethod = "GET"\
+        \
+        for (key, value) in headers \{\
+            request.addValue(value, forHTTPHeaderField: key)\
+        \}\
+        \
+        // Make the request\
+        let (data, response) = try await URLSession.shared.data(for: request)\
+        \
+        guard let httpResponse = response as? HTTPURLResponse else \{\
+            throw SupabaseError.invalidResponse\
+        \}\
+        \
+        guard httpResponse.statusCode == 200 else \{\
+            throw SupabaseError.requestFailed(statusCode: httpResponse.statusCode, \
+                                             message: String(data: data, encoding: .utf8) ?? "Unknown error")\
+        \}\
+        \
+        // Parse the response\
+        guard let jsonObject = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],\
+              let profile = jsonObject.first,\
+              let profileData = profile["data"] as? [String: Any] else \{\
+            throw SupabaseError.decodingFailed\
+        \}\
+        \
+        return profileData\
+    \}\
+    \
+    // MARK: - Helper Methods\
+    private func generateEmbedding(for text: String) async throws -> [Double] \{\
+        let openAIKey = Bundle.main.object(forInfoDictionaryKey: "OPENAI_API_KEY") as? String ?? ""\
+        \
+        guard let url = URL(string: "https://api.openai.com/v1/embeddings") else \{\
+            throw SupabaseError.invalidURL\
+        \}\
+        \
+        let payload = [\
+            "input": text,\
+            "model": "text-embedding-ada-002"\
+        ]\
+        \
+        let jsonData = try JSONSerialization.data(withJSONObject: payload)\
+        \
+        var request = URLRequest(url: url)\
+        request.httpMethod = "POST"\
+        request.addValue("Bearer \\(openAIKey)", forHTTPHeaderField: "Authorization")\
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")\
+        request.httpBody = jsonData\
+        \
+        let (data, response) = try await URLSession.shared.data(for: request)\
+        \
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else \{\
+            throw SupabaseError.requestFailed(statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500, \
+                                             message: String(data: data, encoding: .utf8) ?? "Unknown error")\
+        \}\
+        \
+        struct EmbeddingResponse: Codable \{\
+            struct Embedding: Codable \{\
+                let embedding: [Double]\
+            \}\
+            let data: [Embedding]\
+        \}\
+        \
+        let decoder = JSONDecoder()\
+        let embeddingResponse = try decoder.decode(EmbeddingResponse.self, from: data)\
+        \
+        return embeddingResponse.data.first?.embedding ?? []\
+    \}\
+    \
+    // MARK: - Errors\
+    enum SupabaseError: Error \{\
+        case invalidURL\
+        case invalidResponse\
+        case requestFailed(statusCode: Int, message: String)\
+        case decodingFailed\
+        case unauthenticated\
+    \}\
+\}\
+\
+struct CareerMatch: Codable, Identifiable \{\
+    let id: String\
+    let title: String\
+    let description: String\
+    let requirements: [String]\
+    let salary: String\
+    let growth: String\
+    let match: Double\
+\}\
+```\
+\
+### 8.5 Code Example: OpenAIService\
+\
+```swift\
+import Foundation\
+import Combine\
+\
+class OpenAIService \{\
+    // MARK: - Configuration\
+    private let apiKey: String\
+    private let model: String\
+    private let baseURL = "https://api.openai.com/v1"\
+    \
+    init() \{\
+        // Load from environment or configuration\
+        self.apiKey = Bundle.main.object(forInfoDictionaryKey: "OPENAI_API_KEY") as? String ?? ""\
+        self.model = "gpt-4o"\
+    \}\
+    \
+    // MARK: - Stream Response\
+    func streamResponse(\
+        messages: [ChatMessage],\
+        systemPrompt: String\
+    ) -> AnyPublisher<ResponseChunk, Error> \{\
+        // Convert messages to OpenAI format\
+        let openAIMessages = formatMessages(messages, systemPrompt: systemPrompt)\
+        \
+        // Define tools\
+        let tools = ToolRegistry.shared.getAllToolDefinitions()\
+        \
+        // Create request body\
+        let requestBody: [String: Any] = [\
+            "model": model,\
+            "messages": openAIMessages,\
+            "tools": tools,\
+            "stream": true\
+        ]\
+        \
+        // Create request\
+        guard let url = URL(string: "\\(baseURL)/chat/completions"),\
+              let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else \{\
+            return Fail(error: APIError.invalidRequest).eraseToAnyPublisher()\
+        \}\
+        \
+        var request = URLRequest(url: url)\
+        request.httpMethod = "POST"\
+        request.addValue("Bearer \\(apiKey)", forHTTPHeaderField: "Authorization")\
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")\
+        request.httpBody = jsonData\
+        \
+        // Create streaming publisher\
+        return URLSession.shared.dataTaskPublisher(for: request)\
+            .tryMap \{ data, response -> Data in\
+                guard let httpResponse = response as? HTTPURLResponse else \{\
+                    throw APIError.invalidResponse\
+                \}\
+                \
+                guard httpResponse.statusCode == 200 else \{\
+                    throw APIError.requestFailed(statusCode: httpResponse.statusCode, message: String(data: data, encoding: .utf8) ?? "Unknown error")\
+                \}\
+                \
+                return data\
+            \}\
+            .flatMap \{ data -> AnyPublisher<ResponseChunk, Error> in\
+                // Split the data by lines (SSE format)\
+                let lines = String(data: data, encoding: .utf8)?.components(separatedBy: "\\n") ?? []\
+                \
+                // Process each line\
+                return lines.publisher\
+                    .filter \{ !$0.isEmpty && $0 != "data: [DONE]" \}\
+                    .compactMap \{ line -> Data? in\
+                        guard line.hasPrefix("data: ") else \{ return nil \}\
+                        let jsonString = String(line.dropFirst(6))\
+                        return jsonString.data(using: .utf8)\
+                    \}\
+                    .tryMap \{ jsonData -> ResponseChunk in\
+                        try self.processChunk(jsonData)\
+                    \}\
+                    .eraseToAnyPublisher()\
+            \}\
+            .eraseToAnyPublisher()\
+    \}\
+    \
+    // MARK: - Helper Methods\
+    private func formatMessages(_ messages: [ChatMessage], systemPrompt: String) -> [[String: String]] \{\
+        var formattedMessages: [[String: String]] = [\
+            ["role": "system", "content": systemPrompt]\
+        ]\
+        \
+        for message in messages \{\
+            let role = message.isUser ? "user" : "assistant"\
+            formattedMessages.append(["role": role, "content": message.content])\
+            \
+            // Add tool results if available\
+            if let toolResults = message.toolResults, !toolResults.isEmpty \{\
+                for (tool, result) in toolResults \{\
+                    if let resultData = try? JSONSerialization.data(withJSONObject: result),\
+                       let resultString = String(data: resultData, encoding: .utf8) \{\
+                        formattedMessages.append([\
+                            "role": "tool",\
+                            "tool_call_id": tool,\
+                            "content": resultString\
+                        ])\
+                    \}\
+                \}\
+            \}\
+        \}\
+        \
+        return formattedMessages\
+    \}\
+    \
+    private func processChunk(_ data: Data) throws -> ResponseChunk \{\
+        let decoder = JSONDecoder()\
+        let response = try decoder.decode(StreamResponse.self, from: data)\
+        \
+        // Extract delta content\
+        if let choice = response.choices.first \{\
+            if let toolCalls = choice.delta.toolCalls, !toolCalls.isEmpty \{\
+                let toolCall = toolCalls[0]\
+                \
+                if let functionName = toolCall.function.name \{\
+                    // Parse arguments as JSON\
+                    let arguments = toolCall.function.arguments ?? "\{\}"\
+                    if let argData = arguments.data(using: .utf8),\
+                       let params = try? JSONSerialization.jsonObject(with: argData) as? [String: Any] \{\
+                        return .toolCall(tool: functionName, parameters: params)\
+                    \}\
+                \}\
+            \} else if let content = choice.delta.content, !content.isEmpty \{\
+                return .content(text: content)\
+            \} else if choice.finishReason == "stop" \{\
+                return .end\
+            \}\
+        \}\
+        \
+        // Default to empty content chunk if unable to parse\
+        return .content(text: "")\
+    \}\
+    \
+    // MARK: - Response Models\
+    struct StreamResponse: Decodable \{\
+        let id: String\
+        let choices: [Choice]\
+        \
+        struct Choice: Decodable \{\
+            let delta: Delta\
+            let finishReason: String?\
+            \
+            enum CodingKeys: String, CodingKey \{\
+                case delta\
+                case finishReason = "finish_reason"\
+            \}\
+        \}\
+        \
+        struct Delta: Decodable \{\
+            let content: String?\
+            let toolCalls: [ToolCall]?\
+            \
+            enum CodingKeys: String, CodingKey \{\
+                case content\
+                case toolCalls = "tool_calls"\
+            \}\
+        \}\
+        \
+        struct ToolCall: Decodable \{\
+            let id: String?\
+            let type: String?\
+            let function: Function\
+            \
+            struct Function: Decodable \{\
+                let name: String?\
+                let arguments: String?\
+            \}\
+        \}\
+    \}\
+    \
+    // MARK: - Errors\
+    enum APIError: Error \{\
+        case invalidRequest\
+        case invalidResponse\
+        case requestFailed(statusCode: Int, message: String)\
+        case decodingFailed\
+    \}\
+\}\
+\
+// MARK: - Response Chunk Enum\
+enum ResponseChunk \{\
+    case start\
+    case content(text: String)\
+    case toolCall(tool: String, parameters: [String: Any])\
+    case end\
+\}\
+```\
+\
+### 8.6 Code Example: ToolRegistry\
+\
+```swift\
+import Foundation\
+\
+class ToolRegistry \{\
+    // MARK: - Singleton\
+    static let shared = ToolRegistry()\
+    \
+    private init() \{\
+        registerDefaultTools()\
+    \}\
+    \
+    // MARK: - Tool Storage\
+    private var tools: [String: AITool] = [:]\
+    \
+    // MARK: - Registration\
+    private func registerDefaultTools() \{\
+        register(tool: CareerMatchTool())\
+        register(tool: UserProfileTool())\
+        register(tool: FieldValidationTool())\
+    \}\
+    \
+    func register(tool: AITool) \{\
+        tools[tool.name] = tool\
+    \}\
+    \
+    // MARK: - Tool Access\
+    func getTool(named name: String) -> AITool? \{\
+        return tools[name]\
+    \}\
+    \
+    func getAllTools() -> [AITool] \{\
+        return Array(tools.values)\
+    \}\
+    \
+    // MARK: - Tool Definitions for OpenAI\
+    func getAllToolDefinitions() -> [[String: Any]] \{\
+        return tools.values.map \{ tool in\
+            return [\
+                "type": "function",\
+                "function": [\
+                    "name": tool.name,\
+                    "description": tool.description,\
+                    "parameters": tool.parametersSchema\
+                ]\
+            ]\
+        \}\
+    \}\
+\}\
+\
+// MARK: - Tool Protocol\
+protocol AITool \{\
+    var name: String \{ get \}\
+    var description: String \{ get \}\
+    var parametersSchema: [String: Any] \{ get \}\
+    \
+    func execute(with parameters: [String: Any]) async throws -> Any\
+\}\
+\
+// MARK: - Career Match Tool\
+class CareerMatchTool: AITool \{\
+    let name = "match_career"\
+    let description = "Finds career matches based on a query"\
+    \
+    var parametersSchema: [String: Any] \{\
+        return [\
+            "type": "object",\
+            "properties": [\
+                "query": [\
+                    "type": "string",\
+                    "description": "The search query to find matching careers"\
+                ],\
+                "k": [\
+                    "type": "integer",\
+                    "description": "Number of results to return (default: 3)"\
+                ]\
+            ],\
+            "required": ["query"]\
+        ]\
+    \}\
+    \
+    func execute(with parameters: [String: Any]) async throws -> Any \{\
+        guard let query = parameters["query"] as? String else \{\
+            throw ToolError.missingParameter("query")\
+        \}\
+        \
+        let k = parameters["k"] as? Int ?? 3\
+        \
+        do \{\
+            // Use Supabase to get career matches\
+            let matches = try await SupabaseService.shared.matchCareers(query: query, limit: k)\
+            \
+            // Track tool usage\
+            AnalyticsManager.shared.trackToolUsed(name: name, parameters: [\
+                "query": query,\
+                "k": k,\
+                "results_count": matches.count\
+            ])\
+            \
+            // Convert to dictionary for return\
+            return matches.map \{ match in\
+                return [\
+                    "id": match.id,\
+                    "title": match.title,\
+                    "description": match.description,\
+                    "requirements": match.requirements,\
+                    "salary": match.salary,\
+                    "growth": match.growth,\
+                    "match": match.match\
+                ]\
+            \}\
+        \} catch \{\
+            throw ToolError.executionFailed("Failed to match careers: \\(error.localizedDescription)")\
+        \}\
+    \}\
+\}\
+\
+// MARK: - User Profile Tool\
+class UserProfileTool: AITool \{\
+    let name = "write_user_profile"\
+    let description = "Updates user profile fields"\
+    \
+    var parametersSchema: [String: Any] \{\
+        return [\
+            "type": "object",\
+            "properties": [\
+                "field": [\
+                    "type": "string",\
+                    "description": "The profile field to update"\
+                ],\
+                "value": [\
+                    "type": "object",\
+                    "description": "The value to set for the field"\
+                ]\
+            ],\
+            "required": ["field", "value"]\
+        ]\
+    \}\
+    \
+    func execute(with parameters: [String: Any]) async throws -> Any \{\
+        guard let field = parameters["field"] as? String,\
+              let value = parameters["value"] else \{\
+            throw ToolError.missingParameter("field or value")\
+        \}\
+        \
+        guard let userId = UserManager.shared.currentUserId else \{\
+            throw ToolError.executionFailed("No authenticated user")\
+        \}\
+        \
+        do \{\
+            // Use Supabase to update the user profile\
+            let success = try await SupabaseService.shared.updateUserProfile(\
+                userId: userId,\
+                field: field,\
+                value: value\
+            )\
+            \
+            // Track tool usage\
+            AnalyticsManager.shared.trackToolUsed(name: name, parameters: [\
+                "field": field,\
+                "success": success\
+            ])\
+            \
+            return ["success": success, "field": field]\
+        \} catch \{\
+            throw ToolError.executionFailed("Failed to update profile: \\(error.localizedDescription)")\
+        \}\
+    \}\
+\}\
+\
+// MARK: - Field Validation Tool\
+class FieldValidationTool: AITool \{\
+    let name = "validate_field"\
+    let description = "Validates field values against rules"\
+    \
+    var parametersSchema: [String: Any] \{\
+        return [\
+            "type": "object",\
+            "properties": [\
+                "field": [\
+                    "type": "string",\
+                    "description": "The field name to validate"\
+                ],\
+                "value": [\
+                    "type": "object",\
+                    "description": "The value to validate"\
+                ]\
+            ],\
+            "required": ["field", "value"]\
+        ]\
+    \}\
+    \
+    func execute(with parameters: [String: Any]) async throws -> Any \{\
+        guard let field = parameters["field"] as? String,\
+              let value = parameters["value"] else \{\
+            throw ToolError.missingParameter("field or value")\
+        \}\
+        \
+        // Validation rules based on field\
+        var isValid = true\
+        var validationMessage = "Valid"\
+        \
+        switch field \{\
+        case "email":\
+            if let email = value as? String \{\
+                let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]\{2,64\}"\
+                let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)\
+                isValid = emailPredicate.evaluate(with: email)\
+                validationMessage = isValid ? "Valid email format" : "Invalid email format"\
+            \} else \{\
+                isValid = false\
+                validationMessage = "Email must be a string"\
+            \}\
+            \
+        case "name":\
+            if let name = value as? String \{\
+                isValid = !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty\
+                validationMessage = isValid ? "Valid name" : "Name cannot be empty"\
+            \} else \{\
+                isValid = false\
+                validationMessage = "Name must be a string"\
+            \}\
+            \
+        case "age":\
+            if let age = value as? Int \{\
+                isValid = age >= 13 && age <= 120\
+                validationMessage = isValid ? "Valid age" : "Age must be between 13 and 120"\
+            \} else if let ageString = value as? String, let age = Int(ageString) \{\
+                isValid = age >= 13 && age <= 120\
+                validationMessage = isValid ? "Valid age" : "Age must be between 13 and 120"\
+            \} else \{\
+                isValid = false\
+                validationMessage = "Age must be a number"\
+            \}\
+            \
+        default:\
+            // Default validation (assume valid)\
+            validationMessage = "No specific validation rules for this field"\
+        \}\
+        \
+        // Track validation\
+        AnalyticsManager.shared.trackEvent("field_validation", properties: [\
+            "field": field,\
+            "is_valid": isValid,\
+            "message": validationMessage\
+        ])\
+        \
+        return [\
+            "valid": isValid,\
+            "message": validationMessage\
+        ]\
+    \}\
+\}\
+\
+// MARK: - Tool Error\
+enum ToolError: Error \{\
+    case missingParameter(String)\
+    case executionFailed(String)\
+    case unauthorized\
+    case invalidInput(String)\
+\}\
+```\
+\
+### 8.7 Code Example: CoreMLAdapter\
+\
+```swift\
+import Foundation\
+import CoreML\
+\
+class CoreMLAdapter \{\
+    // MARK: - Singleton\
+    static let shared = CoreMLAdapter()\
+    \
+    private init() \{\
+        loadModel()\
+    \}\
+    \
+    // MARK: - Properties\
+    private var model: MLModel?\
+    private let modelName = "Llama3-8B-Instruct" // The Core ML model name\
+    private let maxTokens = 256\
+    \
+    // MARK: - Model Loading\
+    private func loadModel() \{\
+        do \{\
+            // Try to load the model\
+            guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else \{\
+                print("Failed to find model URL")\
+                return\
+            \}\
+            \
+            // Configure model\
+            let config = MLModelConfiguration()\
+            config.computeUnits = .cpuAndGPU\
+            \
+            // Load model\
+            model = try MLModel(contentsOf: modelURL, configuration: config)\
+            print("Successfully loaded Core ML model: \\(modelName)")\
+        \} catch \{\
+            print("Failed to load Core ML model: \\(error)")\
+        \}\
+    \}\
+    \
+    // MARK: - Response Generation\
+    func generateResponse(to message: String) async throws -> String \{\
+        guard let model = model else \{\
+            throw CoreMLError.modelNotLoaded\
+        \}\
+        \
+        // Create input dictionary\
+        let input: [String: Any] = [\
+            "prompt": formatPrompt(message),\
+            "temperature": 0.7,\
+            "max_tokens": maxTokens\
+        ]\
+        \
+        // Make prediction\
+        return try await withCheckedThrowingContinuation \{ continuation in\
+            do \{\
+                if let prediction = try model.prediction(from: MLDictionaryFeatureProvider(dictionary: input)) as? MLDictionaryFeatureProvider,\
+                   let response = prediction.dictionary["response"] as? String \{\
+                    continuation.resume(returning: response)\
+                \} else \{\
+                    continuation.resume(throwing: CoreMLError.predictionFailed)\
+                \}\
+            \} catch \{\
+                continuation.resume(throwing: error)\
+            \}\
+        \}\
+    \}\
+    \
+    // MARK: - Helper Methods\
+    private func formatPrompt(_ message: String) -> String \{\
+        return """\
+        <s>[INST] You are an offline assistant in the MyPath app. Provide a helpful but brief response.\
+        \
+        User message: \\(message) [/INST]\
+        """\
+    \}\
+    \
+    // MARK: - Errors\
+    enum CoreMLError: Error \{\
+        case modelNotLoaded\
+        case predictionFailed\
+    \}\
+\}\
+```\
+\
+## 9. Integration with Existing App\
+\
+### 9.1 Steps for Integration\
+\
+1. **Prepare Project**\
+   - Add required dependencies\
+   - Configure API keys in Info.plist\
+   - Set up Core Data schema\
+\
+2. **Backend Setup**\
+   - Create Supabase account and project\
+   - Set up database tables and functions\
+   - Create pgvector extension\
+\
+3. **Core Components**\
+   - Implement ConversationStore\
+   - Implement OpenAIService\
+   - Implement SupabaseService\
+\
+4. **Tools Implementation**\
+   - Create ToolRegistry\
+   - Implement individual tools\
+\
+5. **UI Integration**\
+   - Enhance AIAssistantOverlay\
+   - Add assistant button to onboarding flow\
+   - Implement voice interface\
+\
+6. **Testing**\
+   - Unit test core components\
+   - Integration test with backend\
+   - User testing of the complete flow\
+\
+### 9.2 Required Changes to Existing Files\
+\
+1. **AIAssistantViewModel.swift**\
+   ```swift\
+   // Replace current implementation with ConversationStore integration\
+   @MainActor\
+   class AIAssistantViewModel: ObservableObject \{\
+       @Published var messages: [ChatMessage] = []\
+       @Published var inputText: String = ""\
+       @Published var isProcessing = false\
+       @Published var isVoiceMode: Bool = false\
+       \
+       private let conversationStore = ConversationStore()\
+       private var currentStep: OnboardingStep?\
+       \
+       // Initialize with step context\
+       func initialize(for step: OnboardingStep) \{\
+           self.currentStep = step\
+           \
+           // Forward to conversation store\
+           if let stepName = getStepName(step) \{\
+               conversationStore.currentConversation?.step = stepName\
+           \}\
+           \
+           // Set up bindings\
+           setupBindings()\
+           \
+           // Add initial welcome message\
+           let initialPrompt = getContextAwarePrompt(for: step)\
+           messages = [ChatMessage(content: initialPrompt, isUser: false)]\
+       \}\
+       \
+       // Setup bindings to conversation store\
+       private func setupBindings() \{\
+           conversationStore.$messages\
+               .assign(to: &$messages)\
+           \
+           conversationStore.$isLoading\
+               .assign(to: &$isProcessing)\
+       \}\
+       \
+       // Other methods remain similar but delegate to conversationStore\
+   \}\
+   ```\
+\
+2. **AIAssistantOverlay.swift**\
+   ```swift\
+   // Update to use new architecture\
+   struct AIAssistantOverlay: View \{\
+       @ObservedObject var viewModel: AIAssistantViewModel\
+       @Binding var isPresented: Bool\
+       let currentStep: OnboardingStep\
+       \
+       var body: some View \{\
+           ZStack \{\
+               // Background\
+               Color.white\
+                   .edgesIgnoringSafeArea(.all)\
+               \
+               VStack(spacing: 0) \{\
+                   // Header\
+                   headerBar\
+                   \
+                   // Message area - updated to use SSE streaming\
+                   messageArea\
+                   \
+                   // Input area - updated to use ConversationStore\
+                   inputRow\
+               \}\
+               \
+               // Voice assistant overlay\
+               if viewModel.isVoiceMode \{\
+                   VoiceAssistantView(\
+                       isPresented: $viewModel.isVoiceMode,\
+                       onSpeechRecognized: \{ text in\
+                           viewModel.inputText = text ?? ""\
+                       \}\
+                   )\
+               \}\
+           \}\
+           .onAppear \{\
+               viewModel.initialize(for: currentStep)\
+               AnalyticsManager.shared.trackAssistantInvoked(step: currentStep)\
+           \}\
+       \}\
+       \
+       // Rest of implementation updated to work with new architecture\
+   \}\
+   ```\
+\
+3. **OnboardingView.swift**\
+   ```swift\
+   // Add assistant button to each step\
+   struct OnboardingView: View \{\
+       @ObservedObject var viewModel: AppViewModel\
+       let step: OnboardingStep\
+       @State var showAssistant = false\
+       \
+       var body: some View \{\
+           ZStack \{\
+               // Main content remains the same\
+               \
+               // Add floating assistant button\
+               VStack \{\
+                   Spacer()\
+                   \
+                   HStack \{\
+                       Spacer()\
+                       \
+                       Button(action: \{\
+                           showAssistant = true\
+                       \}) \{\
+                           HStack \{\
+                               Image(systemName: "questionmark.circle.fill")\
+                               Text("Assistant")\
+                           \}\
+                           .padding(.vertical, 8)\
+                           .padding(.horizontal, 12)\
+                           .background(Color.brandPrimary)\
+                           .foregroundColor(.white)\
+                           .cornerRadius(16)\
+                           .shadow(radius: 3)\
+                       \}\
+                       .padding()\
+                   \}\
+               \}\
+           \}\
+           .sheet(isPresented: $showAssistant) \{\
+               AIAssistantOverlay(\
+                   viewModel: AIAssistantViewModel(),\
+                   isPresented: $showAssistant,\
+                   currentStep: step\
+               )\
+           \}\
+       \}\
+   \}\
+   ```\
+\
+### 9.3 Environment Configuration\
+\
+Create an `APIKeys.plist` file with the following keys:\
+\
+```xml\
+<?xml version="1.0" encoding="UTF-8"?>\
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\
+<plist version="1.0">\
+<dict>\
+    <key>OPENAI_API_KEY</key>\
+    <string>YOUR_OPENAI_API_KEY</string>\
+    <key>SUPABASE_URL</key>\
+    <string>YOUR_SUPABASE_URL</string>\
+    <key>SUPABASE_KEY</key>\
+    <string>YOUR_SUPABASE_API_KEY</string>\
+</dict>\
+</plist>\
+```\
+\
+## 10. Security and Privacy Considerations\
+\
+### 10.1 Data Protection\
+\
+- All PII data is stored in Supabase with Row Level Security (RLS) policies\
+- Authentication tokens are stored securely in the iOS Keychain\
+- Local conversations are encrypted using iOS Data Protection\
+- API keys are never exposed in client-side code\
+\
+### 10.2 AI Safety Guardrails\
+\
+- System prompts include safety instructions\
+- OpenAI Moderation API checks all user inputs\
+- Relevance classifier prevents off-topic content\
+- Human escalation for persistent issues\
+\
+### 10.3 Error Handling\
+\
+- Graceful degradation to offline mode when network is unavailable\
+- Exponential backoff for API retries\
+- User-friendly error messages\
+- Comprehensive error logging for debugging\
+\
+## 11. Performance Considerations\
+\
+### 11.1 Network Efficiency\
+\
+- SSE (Server-Sent Events) for efficient streaming\
+- Response chunking to minimize latency\
+- Caching of frequently used data\
+- Batched database operations\
+\
+### 11.2 Device Performance\
+\
+- Background processing for heavy operations\
+- Memory management for large conversations\
+- Battery optimization for voice processing\
+- Efficient Core ML model loading\
+\
+## 12. Testing Strategy\
+\
+### 12.1 Unit Tests\
+\
+- Component-level testing for all services\
+- Mock implementation of external dependencies\
+- Test cases for error handling and edge cases\
+\
+### 12.2 Integration Tests\
+\
+- End-to-end testing of conversation flows\
+- API integration testing with mock servers\
+- Database integration testing\
+\
+### 12.3 Performance Tests\
+\
+- Response time benchmarking\
+- Memory usage profiling\
+- Battery consumption testing\
+\
+## 13. Analytics and Monitoring\
+\
+### 13.1 Event Tracking\
+\
+- Track assistant invocation at each step\
+- Monitor tool usage and success rates\
+- Measure conversation completion rates\
+- Track user engagement metrics\
+\
+### 13.2 Error Monitoring\
+\
+- Log API failures and retries\
+- Track error rates by component\
+- Monitor offline mode usage\
+- Alert on critical failures\
+\
+### 13.3 Performance Monitoring\
+\
+- Track response times\
+- Monitor model load times\
+- Measure conversation length\
+- Track tool execution times\
+\
+## 14. Deployment and Release Plan\
+\
+### 14.1 Phased Rollout\
+\
+1. **Alpha Testing** - Internal team only\
+2. **Beta Testing** - Selected test users (TestFlight)\
+3. **Limited Release** - 10% of users\
+4. **Full Release** - All users\
+\
+### 14.2 Feature Flags\
+\
+- Enable/disable AI assistant\
+- Toggle voice features\
+- Control tool availability\
+- Adjust guardrail strictness\
+\
+### 14.3 Monitoring Plan\
+\
+- Daily review of error logs\
+- Weekly performance review\
+- Bi-weekly analytics review\
+- Monthly security audit\
+\
+## 15. Maintenance and Update Strategy\
+\
+### 15.1 Model Updates\
+\
+- Regular reviews of model performance\
+- A/B testing of new models\
+- System prompt refinement\
+- Tool capability expansion\
+\
+### 15.2 Content Updates\
+\
+- Regular updates to career database\
+- Refinement of response templates\
+- Addition of new tools\
+- Expansion of offline capabilities\
+\
+### 15.3 Architecture Evolution\
+\
+- Transition to fully server-side solution\
+- Integration with additional ML models\
+- Enhanced personalization features\
+- Multi-lingual support\
+\
+## 16. Project Plan and Implementation Roadmap\
+\
+# MyPath AI Coach \'96 System Blueprint v1.3  \
+*(2025-04-29)*\
+\
+---\
+\
+## 16.1 Mission & Success Targets\
+\
+| Objective | KPI / Target | Why it matters |\
+|-----------|--------------|----------------|\
+| **Smooth onboarding** | +15 % step-completion vs. control | Higher activation \uc0\u8594  higher LTV |\
+| **Rich profile data** | \uc0\u8805  80 % users finish RIASEC & interests | Fuels downstream matchmaking |\
+| **Delight & trust** | CSAT \uc0\u8805  4 / 5; policy incidents \u8804  1 % | Retention & brand reputation |\
+| **Sustainable cost** | Infra \uc0\u8804  $0.06 / MAU | Scales with freemium model |\
+\
+---\
+\
+## 16.2 What the Coach Actually Does\
+\
+### 16.2.1 Happy-path sequence (text + voice)\
+\
+1. **User taps "Assistant \uc0\u65311 "** on *Current Status* page (`stepId=currentStatus`).  \
+2. `CoachOverlay` opens, pushes a *context message* to **OpenAI Responses API**.  \
+3. **Agents SDK** loads system prompt + `instructions/currentStatus.md` and calls **GPT-4o**.  \
+4. GPT-4o streams a greeting ("Need help choosing a life stage? \'85") \'96 bubbles + TTS.  \
+5. User asks a question \uc0\u8594  guardrail pipeline (regex \u10140  relevance o1-mini \u10140  moderation).  \
+6. Model either responds directly **or** calls a **tool** (`match_career`, `validate_field`, etc.).  \
+7. Tools run (Supabase RPC, local validation) \uc0\u8594  results streamed back to UI.  \
+8. When user fills the form, Combine emits value \uc0\u8594  `write_user_profile` tool stores it.  \
+9. Assistant shows \uc0\u10003  toast and auto-dismisses.\
+\
+### 16.2.2 Offline & escalation\
+\
+| Scenario | Flow |\
+|----------|------|\
+| **No network** | ConversationStore routes prompt to **Core-ML Llama 3 8B** \uc0\u8594  short answer; "Offline mode" badge shown. |\
+| **3 consecutive tool errors OR user asks salary in obscure region** | `retryLimiter` triggers `escalate_to_human` tool \uc0\u8594  SendGrid ticket \u8594  user sees "Connecting you to a human coach\'85". |\
+\
+### 16.2.3 Layered guardrails\
+\
+1. Regex / length filter (client)  \
+2. Relevance classifier (o1-mini)  \
+3. OpenAI Moderation API  \
+4. Tool-risk registry (blocks `high` risk writes)  \
+5. Retry-to-human escalation\
+\
+---\
+\
+## 16.3 Technology Stack (delta-validated)\
+\
+* All client libs are compatible down to **iOS 15**.  \
+* Server uses **OpenAI Responses API** (Assistants successor) \'96 fully GA.  \
+* Core-ML model built with Apple's **ml-convert 1.2**; size \uc0\u8776  1.9 GB, loads lazily.  \
+* Supabase **pgvector 0.5.1**; IVFFlat index `lists=100`.\
+\
+---\
+\
+## 16.4 Deliverable Timeline (8 weeks)\
+\
+| Wk | Major Outputs | New items since v1.2 \uc0\u9650  |\
+|----|---------------|-----------------------|\
+| **0 Kick-off** | Charter, repo, CI | \'96 |\
+| **1\'962 Foundations** | Supabase + pgvector, 15 docs, tool stubs | \'96 |\
+| **3\'964 Orchestration & Prompting** | LangGraph flow; **auto-gen instructions with o3-mini** \uc0\u9650  | |\
+| **5 UI** | Overlay on all steps, streaming text | \'96 |\
+| **6 Voice & Guardrail I** | OpenAI TTS/STT; **relevance guardrail** \uc0\u9650 ; `tool_registry.yaml` \u9650  | |\
+| **7 Analytics & Guardrail II** | PostHog, moderation, **retry-to-human** \uc0\u9650  | |\
+| **8 Closed Beta** | 20 users, corpus 5 k docs, KPI report | \'96 |\
+| **9\'9610 (opt.) Launch** | FR-CA localisation, privacy audit | \'96 |\
+\
+*\uc0\u9650  = tasks added to satisfy OpenAI "Practical Guide" check-list.*\
+\
+---\
+\
+## 16.5 RACI Snapshot\
+\
+| Work-stream | R | A | C | I |\
+|-------------|---|---|---|---|\
+| Supabase schema & RPC | Back-end | Lead BE | Data Eng | PM |\
+| Agent & Tools | Back-end | Lead BE | ML Eng | QA |\
+| SwiftUI + Voice | Mobile Dev | Lead iOS | Designer | PM |\
+| Guardrails & Telemetry | Data Eng | Lead BE | Security | PM |\
+| Beta testing | QA Lead | PM | All Devs | Stakeholders |\
+\
+---\
+\
+## 16.6 Risks & Mitigations\
+\
+| Risk | Mitigation |\
+|------|------------|\
+| Hallucinated advice | RAG citations + nightly eval via LangSmith |\
+| Voice quota spike | Fallback to text; optional ElevenLabs throttling |\
+| PII leak | Moderation + PII regex + RLS |\
+| Cost overrun | Hybrid small/large-model switch; billing alerts |\
+\
+---\
+\
+## 16.7 "Definition of Done" \'96 v1 GA\
+\
+1. **KPIs hit:** onboarding +15 %, CSAT \uc0\u8805  4.0, cost \u8804  $0.06/MAU.  \
+2. Guardrail test-suite passes (toxicity, PII, off-topic).  \
+3. 80 % unit-test coverage on tools & validators.  \
+4. Privacy audit signed.  \
+5. App Store approved.\
+\
+---\
+\
+## 16.8 Next Steps and Conclusion\
+\
+The MyPath AI Coach leverages modern AI capabilities to create a personalized, context-aware assistant that guides users through the onboarding process. By implementing this architecture, the app will provide a more engaging, helpful, and differentiating experience.\
+\
+### Immediate Next Actions:\
+\
+1. Secure API keys and set up Supabase account\
+2. Implement core components (ConversationStore, OpenAIService)\
+3. Set up database schema and functions\
+4. Develop and test tools\
+5. Integrate UI components\
+6. Conduct thorough testing\
+7. Deploy in phases with careful monitoring\
+\
+### Attachment Development Priorities:\
+\
+* `/scripts/bulk_ingest_career_docs.py` \'96 Supabase loader  \
+* `/scripts/gen_instructions.py` \'96 o3-mini auto-prompt  \
+* `/docs/api-contracts/openai_tools.json` \'96 function schemas\
+\
+This comprehensive system architecture and project plan provide the foundation for a successful implementation of the MyPath AI Coach, aligning with the project goals and technical requirements.}
