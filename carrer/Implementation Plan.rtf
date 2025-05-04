@@ -1,0 +1,251 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;}
+{\colortbl;\red255\green255\blue255;\red16\green16\blue16;\red255\green255\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c7843\c7843\c7451;\cssrgb\c100000\c100000\c100000;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 # Analysis of MyPath AI Coach Implementation Plan\
+\
+Based on the files provided, I'll analyze the current codebase and the system architecture document to create a practical work plan for implementing the MyPath AI Coach.\
+\
+## Current State Analysis\
+\
+### Existing Components\
+\
+1. **MyPath App Core**:\
+   - Comprehensive SwiftUI-based app with onboarding flow\
+   - RIASEC assessment functionality\
+   - Career recommendation engine\
+   - User profile management\
+   - Firebase integration for authentication and data storage\
+\
+2. **Current AI Assistant**:\
+   - Basic implementation in `chat.swift`\
+   - Simple `AIAssistantViewModel` class\
+   - `AIAssistantOverlay` view with chat UI\
+   - Voice assistant capabilities in early form\
+\
+3. **Data Models**:\
+   - Extensive career-related data structures\
+   - Question bank for RIASEC assessment\
+   - User profile data models\
+\
+### Gaps vs. Architecture Document\
+\
+1. **Conversation Management**:\
+   - Missing `ConversationStore` for state management\
+   - No persistent conversation storage\
+   - No offline functionality\
+\
+2. **AI Integration**:\
+   - Missing OpenAI API integration\
+   - No streaming support\
+   - No function calling implementation\
+\
+3. **Tool Framework**:\
+   - Missing `ToolRegistry` \
+   - No tool implementation for career matching, profile updates, etc.\
+\
+4. **Vector Search**:\
+   - No Supabase integration\
+   - Missing vector embedding support\
+   - No career matching functionality\
+\
+5. **Error Handling & Network Monitoring**:\
+   - Basic error handling exists, but not comprehensive\
+   - No network availability monitoring\
+   - Missing retry logic\
+\
+## Implementation Plan\
+\
+### Phase 1: Foundation (Weeks 1-2)\
+\
+1. **API Configuration & Foundation**:\
+   - Create `APIKeys.plist` for OpenAI and Supabase credentials\
+   - Set up Core Data schema for conversation persistence\
+   - Implement `NetworkMonitor` for connectivity tracking\
+\
+2. **Supabase Setup**:\
+   - Create Supabase project\
+   - Set up database schema for profiles, careers, and conversations\
+   - Configure pgvector extension\
+   - Implement SQL functions for career matching\
+\
+3. **Core Components**:\
+   - Implement `ConversationStore`\
+   - Create `OpenAIService` with streaming support\
+   - Develop `SupabaseService` for data operations\
+\
+### Phase 2: Tool Framework & AI Integration (Weeks 3-4)\
+\
+1. **Tool Framework**:\
+   - Implement `ToolRegistry` for tool management\
+   - Create `AITool` protocol\
+   - Develop core tools:\
+     - `CareerMatchTool`\
+     - `UserProfileTool`\
+     - `FieldValidationTool`\
+\
+2. **AI Integration**:\
+   - Update `AIAssistantViewModel` to use `ConversationStore`\
+   - Implement system prompt generation\
+   - Add function calling support\
+   - Implement response streaming\
+\
+3. **Offline Mode**:\
+   - Configure Core-ML adapter for Llama 3\
+   - Set up offline response generation\
+   - Implement graceful degradation\
+\
+### Phase 3: UI Integration & Voice (Weeks 5-6)\
+\
+1. **UI Enhancement**:\
+   - Update `AIAssistantOverlay` with streaming functionality\
+   - Add assistant button to `OnboardingView`\
+   - Implement typing indicators and bubble animations\
+   - Add offline mode indicator\
+\
+2. **Voice Interface**:\
+   - Enhance `VoiceAssistantView`\
+   - Implement speech recognition\
+   - Add text-to-speech functionality\
+   - Create smooth transitions between voice and text modes\
+\
+3. **Onboarding Flow Integration**:\
+   - Configure step-specific context and prompts\
+   - Implement form data binding for user inputs\
+   - Add assistant button to all onboarding steps\
+\
+### Phase 4: Guardrails & Analytics (Week 7)\
+\
+1. **Safety Guardrails**:\
+   - Implement input validation\
+   - Add relevance classifier integration\
+   - Configure OpenAI Moderation API checks\
+   - Create tool-risk registry\
+\
+2. **Analytics & Monitoring**:\
+   - Set up PostHog integration\
+   - Implement event tracking\
+   - Configure error logging\
+   - Add performance monitoring metrics\
+\
+3. **Error Handling & Resilience**:\
+   - Implement retry logic with exponential backoff\
+   - Add human escalation capability\
+   - Create user-friendly error messages\
+\
+### Phase 5: Testing & Deployment (Week 8)\
+\
+1. **Testing**:\
+   - Create unit tests for core components\
+   - Implement integration tests for AI flows\
+   - Conduct user testing of the complete experience\
+   - Performance testing\
+\
+2. **Documentation**:\
+   - Code documentation\
+   - System architecture updates\
+   - Usage guidelines\
+\
+3. **Deployment Preparation**:\
+   - Feature flag configuration\
+   - Monitoring setup\
+   - Phased rollout plan\
+\
+## Specific Files to Create or Modify\
+\
+### New Files to Create\
+\
+1. **Core Components**:\
+   - `ConversationStore.swift`\
+   - `OpenAIService.swift`\
+   - `SupabaseService.swift`\
+   - `NetworkMonitor.swift`\
+   - `SystemPromptGenerator.swift`\
+\
+2. **Tool Framework**:\
+   - `ToolRegistry.swift`\
+   - `CareerMatchTool.swift`\
+   - `UserProfileTool.swift`\
+   - `FieldValidationTool.swift`\
+   - `EscalationTool.swift`\
+\
+3. **Offline Support**:\
+   - `CoreMLAdapter.swift`\
+   - `SpeechProvider.swift`\
+\
+4. **Analytics & Monitoring**:\
+   - `AnalyticsManager.swift`\
+   - `ErrorLogger.swift`\
+\
+### Files to Modify\
+\
+1. **UI Components**:\
+   - `AIAssistantViewModel.swift` - Major update to use ConversationStore\
+   - `AIAssistantOverlay.swift` - Add streaming and tool support\
+   - `VoiceAssistantOverlay.swift` - Enhance with TTS/STT\
+   - `OnboardingView.swift` - Add assistant button\
+\
+2. **Core Integration**:\
+   - `chat.swift` - Refactor into separate components\
+   - `AppViewModel.swift` - Add conversation state handling\
+\
+## Implementation Roadmap\
+\
+### Week 1: Setup & Core Components\
+- Create `APIKeys.plist` and configure environment\
+- Implement `NetworkMonitor`\
+- Create Supabase project and set up database schema\
+- Begin implementing `ConversationStore`\
+\
+### Week 2: Data Layer & Services\
+- Complete `ConversationStore` implementation\
+- Implement `OpenAIService` with streaming\
+- Create `SupabaseService` with vector search\
+- Set up Core Data schema for persistence\
+\
+### Week 3: Tool Framework\
+- Implement `ToolRegistry`\
+- Create tool protocol and base implementations\
+- Develop career matching tool\
+- Implement profile update tool\
+\
+### Week 4: AI Integration\
+- Update `AIAssistantViewModel` to use new architecture\
+- Implement system prompt generation\
+- Set up function calling support\
+- Begin offline mode implementation\
+\
+### Week 5: UI Enhancement\
+- Update `AIAssistantOverlay` with streaming UI\
+- Add typing indicators and animations\
+- Begin integrating with onboarding flow\
+- Implement conversation persistence\
+\
+### Week 6: Voice & Complete UI Integration\
+- Enhance voice assistant functionality\
+- Complete onboarding integration\
+- Implement form data binding\
+- Add offline mode indicators\
+\
+### Week 7: Guardrails & Analytics\
+- Implement input validation\
+- Configure moderation checks\
+- Set up analytics tracking\
+- Add error handling and resilience\
+\
+### Week 8: Testing & Deployment Prep\
+- Create unit and integration tests\
+- Conduct user testing\
+- Document the implementation\
+- Prepare for deployment\
+\
+## Conclusion\
+\
+The implementation of the MyPath AI Coach will enhance the app's onboarding flow with a personalized, context-aware assistant. The existing codebase provides a strong foundation, but significant work is needed to implement the advanced capabilities outlined in the architecture document.\
+\
+By following this phased approach, we can methodically build and integrate each component, ensuring a robust and user-friendly AI assistant that guides users through the onboarding process, helps gather richer user data, and differentiates the application from competitors.}
