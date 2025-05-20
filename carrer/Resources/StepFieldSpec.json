@@ -1,0 +1,435 @@
+{
+  "version": "1.0",
+  "order": [
+    "howDidYouHearAboutUs",
+    "getName",
+    "welcomeMessage",
+    "currentStatus",
+    "studentLevel",
+    "motivationalMessage",
+    "interests",
+    "riasecQuestions_realistic",
+    "riasecQuestions_investigative",
+    "riasecQuestions_artistic",
+    "riasecQuestions_social",
+    "riasecQuestions_enterprising",
+    "riasecQuestions_conventional",
+    "favoriteSubjects",
+    "extracurriculars",
+    "careerInterests",
+    "loadingScreen",
+    "completionScreen"
+  ],
+  "steps": {
+    "howDidYouHearAboutUs": {
+      "title": "Welcome\! How Did You Hear About Us?",
+      "fields": ["howDidYouHearAboutUs"],
+      "required": ["howDidYouHearAboutUs"],
+      "nextStep": "getName",
+      "isInputStep": true
+    },
+    "getName": {
+      "title": "Let's Get to Know You",
+      "fields": ["name"],
+      "required": ["name"],
+      "nextStep": "welcomeMessage",
+      "isInputStep": true
+    },
+    "welcomeMessage": {
+      "title": "Welcome\!",
+      "fields": [],
+      "required": [],
+      "nextStep": "currentStatus",
+      "isInputStep": false,
+      "needsParameter": "name"
+    },
+    "currentStatus": {
+      "title": "What's Your Current Status?",
+      "fields": ["currentStatus"],
+      "required": ["currentStatus"],
+      "nextStep": "studentLevel",
+      "isInputStep": true,
+      "conditionalNavigation": [
+        {
+          "field": "currentStatus",
+          "valueNot": "High School Student",
+          "valueNot": "College Student",
+          "nextStep": "motivationalMessage"
+        }
+      ]
+    },
+    "studentLevel": {
+      "title": "What's Your Student Level?",
+      "fields": ["studentLevel"],
+      "required": ["studentLevel"],
+      "nextStep": "motivationalMessage",
+      "isInputStep": true
+    },
+    "motivationalMessage": {
+      "title": "You're Doing Great\!",
+      "fields": [],
+      "required": [],
+      "nextStep": "interests",
+      "isInputStep": false
+    },
+    "interests": {
+      "title": "What Best Describes You?",
+      "fields": ["interests"],
+      "required": ["interests"],
+      "nextStep": "riasecQuestions_realistic",
+      "isInputStep": true,
+      "validation": {
+        "interests": {
+          "minCount": 1,
+          "maxCount": 5
+        }
+      }
+    },
+    "riasecQuestions_realistic": {
+      "title": "Realistic Interests",
+      "fields": ["riasecResponses_realistic"],
+      "required": ["riasecResponses_realistic"],
+      "nextStep": "riasecQuestions_investigative",
+      "isInputStep": true,
+      "riasecDimension": "realistic"
+    },
+    "riasecQuestions_investigative": {
+      "title": "Investigative Interests",
+      "fields": ["riasecResponses_investigative"],
+      "required": ["riasecResponses_investigative"],
+      "nextStep": "riasecQuestions_artistic",
+      "isInputStep": true,
+      "riasecDimension": "investigative"
+    },
+    "riasecQuestions_artistic": {
+      "title": "Artistic Interests",
+      "fields": ["riasecResponses_artistic"],
+      "required": ["riasecResponses_artistic"],
+      "nextStep": "riasecQuestions_social",
+      "isInputStep": true,
+      "riasecDimension": "artistic"
+    },
+    "riasecQuestions_social": {
+      "title": "Social Interests",
+      "fields": ["riasecResponses_social"],
+      "required": ["riasecResponses_social"],
+      "nextStep": "riasecQuestions_enterprising",
+      "isInputStep": true,
+      "riasecDimension": "social"
+    },
+    "riasecQuestions_enterprising": {
+      "title": "Enterprising Interests",
+      "fields": ["riasecResponses_enterprising"],
+      "required": ["riasecResponses_enterprising"],
+      "nextStep": "riasecQuestions_conventional",
+      "isInputStep": true,
+      "riasecDimension": "enterprising"
+    },
+    "riasecQuestions_conventional": {
+      "title": "Conventional Interests",
+      "fields": ["riasecResponses_conventional"],
+      "required": ["riasecResponses_conventional"],
+      "nextStep": "favoriteSubjects",
+      "isInputStep": true,
+      "riasecDimension": "conventional"
+    },
+    "favoriteSubjects": {
+      "title": "What Are Your Favorite School Subjects?",
+      "fields": ["favoriteSubjects"],
+      "required": ["favoriteSubjects"],
+      "nextStep": "extracurriculars",
+      "isInputStep": true,
+      "validation": {
+        "favoriteSubjects": {
+          "minCount": 1,
+          "maxCount": 3
+        }
+      }
+    },
+    "extracurriculars": {
+      "title": "What Activities Do You Enjoy Outside of School?",
+      "fields": ["extracurriculars", "extracurricularOther"],
+      "required": ["extracurriculars"],
+      "nextStep": "careerInterests",
+      "isInputStep": true
+    },
+    "careerInterests": {
+      "title": "What Careers Interest You the Most?",
+      "fields": ["careerInterests", "careerInterestsOther"],
+      "required": ["careerInterests"],
+      "nextStep": "loadingScreen",
+      "isInputStep": true
+    },
+    "loadingScreen": {
+      "title": "Processing Your Responses",
+      "fields": [],
+      "required": [],
+      "nextStep": "completionScreen",
+      "isInputStep": false,
+      "needsProcessing": true
+    },
+    "completionScreen": {
+      "title": "All Done\!",
+      "fields": [],
+      "required": [],
+      "nextStep": "",
+      "isInputStep": false,
+      "isLastStep": true
+    }
+  },
+  "fields": {
+    "howDidYouHearAboutUs": {
+      "label": "How did you hear about us?",
+      "type": "selection",
+      "options": [
+        "Friend or Family",
+        "School or Teacher",
+        "Social Media",
+        "Search Engine",
+        "App Store",
+        "Advertisement",
+        "Other"
+      ],
+      "allowsCustom": true,
+      "validation": {
+        "required": true
+      }
+    },
+    "name": {
+      "label": "Your name",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "validation": {
+        "required": true,
+        "minLength": 1
+      }
+    },
+    "currentStatus": {
+      "label": "Current status",
+      "type": "selection",
+      "options": [
+        "High School Student",
+        "College Student",
+        "Recent Graduate",
+        "Working Professional",
+        "Career Changer",
+        "Taking a Gap Year",
+        "Other"
+      ],
+      "allowsCustom": true,
+      "validation": {
+        "required": true
+      }
+    },
+    "studentLevel": {
+      "label": "Student level",
+      "type": "selection",
+      "options": [
+        "High School Freshman",
+        "High School Sophomore",
+        "High School Junior",
+        "High School Senior",
+        "College Freshman",
+        "College Sophomore",
+        "College Junior",
+        "College Senior",
+        "Graduate Student",
+        "Not Currently a Student"
+      ],
+      "dependsOn": {
+        "field": "currentStatus",
+        "includes": "Student"
+      },
+      "validation": {
+        "required": true
+      }
+    },
+    "interests": {
+      "label": "Interests",
+      "type": "multiSelection",
+      "options": [
+        "Technology & Computing",
+        "Science & Research",
+        "Arts & Design",
+        "Business & Finance",
+        "Healthcare & Medicine",
+        "Education & Teaching",
+        "Engineering",
+        "Communication & Media",
+        "Helping & Social Services",
+        "Nature & Environment",
+        "Sports & Athletics"
+      ],
+      "minCount": 1,
+      "maxCount": 5,
+      "validation": {
+        "required": true,
+        "minCount": 1,
+        "maxCount": 5
+      }
+    },
+    "riasecResponses_realistic": {
+      "label": "Realistic questions",
+      "type": "ratings",
+      "questions": [
+        "I enjoy working with my hands or tools",
+        "I like repairing things",
+        "I prefer practical, hands-on problems over abstract ones"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "riasecResponses_investigative": {
+      "label": "Investigative questions",
+      "type": "ratings",
+      "questions": [
+        "I enjoy solving puzzles or complex problems",
+        "I like to analyze information and data",
+        "I'm curious about how things work"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "riasecResponses_artistic": {
+      "label": "Artistic questions",
+      "type": "ratings",
+      "questions": [
+        "I appreciate creativity and self-expression",
+        "I enjoy artistic activities like writing, music, or design",
+        "I tend to think outside the box"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "riasecResponses_social": {
+      "label": "Social questions",
+      "type": "ratings",
+      "questions": [
+        "I enjoy helping others learn or grow",
+        "I'm good at understanding how people feel",
+        "I like working in groups or teams"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "riasecResponses_enterprising": {
+      "label": "Enterprising questions",
+      "type": "ratings",
+      "questions": [
+        "I enjoy persuading or leading others",
+        "I like starting or organizing activities",
+        "I'm comfortable taking risks"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "riasecResponses_conventional": {
+      "label": "Conventional questions",
+      "type": "ratings",
+      "questions": [
+        "I enjoy working with clear rules and structure",
+        "I'm good at organizing information or data",
+        "I pay attention to details and accuracy"
+      ],
+      "minRating": 1,
+      "maxRating": 5,
+      "validation": {
+        "required": true
+      }
+    },
+    "favoriteSubjects": {
+      "label": "Favorite subjects",
+      "type": "multiSelection",
+      "options": [
+        "Math",
+        "Science",
+        "Art",
+        "History",
+        "English",
+        "Technology",
+        "Physical Education",
+        "Other"
+      ],
+      "minCount": 1,
+      "maxCount": 3,
+      "validation": {
+        "required": true,
+        "minCount": 1,
+        "maxCount": 3
+      }
+    },
+    "extracurriculars": {
+      "label": "Extracurricular activities",
+      "type": "multiSelection",
+      "options": [
+        "Robotics Club",
+        "Drama or Theatre",
+        "Sports",
+        "Debate Team",
+        "Volunteering",
+        "Music or Band",
+        "Other"
+      ],
+      "validation": {
+        "required": true,
+        "minCount": 1
+      }
+    },
+    "extracurricularOther": {
+      "label": "Other extracurricular activity",
+      "type": "string",
+      "dependsOn": {
+        "field": "extracurriculars",
+        "includes": "Other"
+      },
+      "validation": {
+        "required": false
+      }
+    },
+    "careerInterests": {
+      "label": "Career interests",
+      "type": "multiSelection",
+      "options": [
+        "Doctor",
+        "Engineer",
+        "Artist",
+        "Entrepreneur",
+        "Research Scientist",
+        "Teacher",
+        "Other"
+      ],
+      "validation": {
+        "required": true,
+        "minCount": 1
+      }
+    },
+    "careerInterestsOther": {
+      "label": "Other career interest",
+      "type": "string",
+      "dependsOn": {
+        "field": "careerInterests",
+        "includes": "Other"
+      },
+      "validation": {
+        "required": false
+      }
+    }
+  }
+}
+EOL < /dev/null

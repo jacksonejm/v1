@@ -252,14 +252,74 @@ struct OnboardingView: View {
             
         case .interests:
             if let selectedInterests = viewModel.userData[.interests] as? Set<InterestOption> {
-                return selectedInterests.count != 3
+                return selectedInterests.count < 1 || selectedInterests.count > 5
+            } else if let selectedInterests = viewModel.userData[.interests] as? [InterestOption] {
+                return selectedInterests.count < 1 || selectedInterests.count > 5
             }
             return true
             
-        case .riasecQuestions:
-            if let responses = viewModel.userData[.riasecResponses] as? [String: Int] {
-                return responses.isEmpty
+        case .riasecQuestions(let dimension):
+            // Get questions for this dimension directly from the case
+            let dimensionQuestions: [String]
+            switch dimension {
+            case .realistic:
+                dimensionQuestions = [
+                    "I enjoy working with my hands or tools",
+                    "I like repairing things",
+                    "I prefer practical, hands-on problems over abstract ones"
+                ]
+            case .investigative:
+                dimensionQuestions = [
+                    "I enjoy solving puzzles or complex problems",
+                    "I like to analyze information and data",
+                    "I'm curious about how things work"
+                ]
+            case .artistic:
+                dimensionQuestions = [
+                    "I appreciate creativity and self-expression",
+                    "I enjoy artistic activities like writing, music, or design",
+                    "I tend to think outside the box"
+                ]
+            case .social:
+                dimensionQuestions = [
+                    "I enjoy helping others learn or grow",
+                    "I'm good at understanding how people feel",
+                    "I like working in groups or teams"
+                ]
+            case .enterprising:
+                dimensionQuestions = [
+                    "I enjoy persuading or leading others",
+                    "I like starting or organizing activities",
+                    "I'm comfortable taking risks"
+                ]
+            case .conventional:
+                dimensionQuestions = [
+                    "I enjoy working with clear rules and structure",
+                    "I'm good at organizing information or data",
+                    "I pay attention to details and accuracy"
+                ]
             }
+            
+            // Try checking dimension-specific responses first
+            if let riasecResponses = viewModel.userData[.riasecResponses] as? [String: Any] {
+                if let dimensionObj = riasecResponses[dimension.rawValue] {
+                    // Handle different formats
+                    if let dimensionResponses = dimensionObj as? [String: Int] {
+                        return dimensionResponses.count < dimensionQuestions.count
+                    } else if let dimensionAny = dimensionObj as? [String: Any] {
+                        return dimensionAny.count < dimensionQuestions.count
+                    }
+                }
+            }
+            
+            // Fall back to checking flattened responses
+            if let flattenedResponses = viewModel.userData[.riasecResponsesFlat] as? [String: Int] {
+                // Count how many of this dimension's questions are answered
+                let answeredCount = dimensionQuestions.filter { flattenedResponses[$0] != nil }.count
+                return answeredCount < dimensionQuestions.count
+            }
+            
+            // If we can't find responses in any format, disable the button
             return true
             
         case .favoriteSubjects:
@@ -279,7 +339,7 @@ struct OnboardingView: View {
     private var showNextButton: Bool {
         switch step {
         case .loadingScreen:
-            return false
+            return false // No manual navigation from loading screen
         default:
             return true
         }
@@ -388,59 +448,26 @@ struct OnboardingView: View {
     }
     
     private func navigateToNextStep() {
-        switch step {
-        case .howDidYouHearAboutUs:
-            viewModel.appFlowState = .onboarding(step: .getName)
-            
-        case .getName:
-            let name = viewModel.userData[.name] as? String ?? ""
-            viewModel.appFlowState = .onboarding(step: .welcomeMessage(name: name))
-            
-        case .welcomeMessage:
-            viewModel.appFlowState = .onboarding(step: .currentStatus)
-            
-        case .currentStatus:
-            if let status = viewModel.userData[.currentStatus] as? SelectionOption,
-               status.title == "Student" {
-                viewModel.appFlowState = .onboarding(step: .studentLevel)
-            } else {
-                viewModel.appFlowState = .onboarding(step: .interests)
-            }
-            
-        case .studentLevel:
-            viewModel.appFlowState = .onboarding(step: .motivationalMessage)
-            
-        case .motivationalMessage:
-            viewModel.appFlowState = .onboarding(step: .interests)
-            
-        case .interests:
-            viewModel.appFlowState = .onboarding(step: .riasecQuestions(dimension: .realistic))
-            
-        case .riasecQuestions(let dimension):
-            if let nextDimension = getNextRIASECDimension(after: dimension) {
-                viewModel.appFlowState = .onboarding(step: .riasecQuestions(dimension: nextDimension))
-            } else {
-                viewModel.appFlowState = .onboarding(step: .favoriteSubjects)
-            }
-            
-        case .favoriteSubjects:
-            viewModel.appFlowState = .onboarding(step: .extracurriculars)
-            
-        case .extracurriculars:
-            viewModel.appFlowState = .onboarding(step: .careerInterests)
-            
-        case .careerInterests:
-            viewModel.appFlowState = .onboarding(step: .loadingScreen)
-            
-        case .loadingScreen:
+        // Use the centralized navigation method in the view model
+        // This ensures consistent forward navigation with proper history tracking
+        viewModel.nextOnboardingStep()
+        
+        // Special case for loading screen to start career suggestion generation
+        if case .onboarding(.loadingScreen) = viewModel.appFlowState {
+            // Start career suggestion generation immediately
             Task {
+                print("Starting career suggestion generation")
                 await viewModel.generateCareerSuggestions()
+                print("Career suggestion generation complete, moving to completion screen")
+                // Ensure we're on the main thread and move to the completion screen
                 await MainActor.run {
                     viewModel.appFlowState = .onboarding(step: .completionScreen)
                 }
             }
-            
-        case .completionScreen:
+        }
+        
+        // Special case for completion screen to show account creation prompt
+        if case .onboarding(.completionScreen) = viewModel.appFlowState {
             showAccountCreationPrompt = true
         }
     }
@@ -453,6 +480,7 @@ struct OnboardingView: View {
         }
         return all[currentIndex + 1]
     }
+    
 }
 
 // MARK: - Supporting Views
@@ -534,9 +562,10 @@ struct AccountCreationPromptView: View {
 // MARK: - Back Button
 struct BackButton: View {
     @ObservedObject var viewModel: AppViewModel
+    @State private var showConfirmation = false
     
     var body: some View {
-        Button(action: goBack) {
+        Button(action: handleBackPress) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(AppColors.primary)
@@ -544,11 +573,76 @@ struct BackButton: View {
                 .background(Color.gray.opacity(0.1))
                 .clipShape(Circle())
         }
+        .alert(isPresented: $showConfirmation) {
+            Alert(
+                title: Text("Return to Welcome?"),
+                message: Text("Going back will reset all your progress in the onboarding process. This cannot be undone."),
+                primaryButton: .destructive(Text("Reset & Go Back")) {
+                    // Proceed with navigation which will reset data and go to welcome
+                    viewModel.previousOnboardingStep()
+                },
+                secondaryButton: .cancel(Text("Stay Here"))
+            )
+        }
     }
     
-    private func goBack() {
-        // Go back to the previous onboarding step
-        viewModel.previousOnboardingStep()
+    private func handleBackPress() {
+        // Check if going back would return to welcome page
+        if wouldReturnToWelcome() {
+            // Show confirmation since this will reset all progress
+            showConfirmation = true
+        } else {
+            // Just regular back navigation within the flow
+            viewModel.previousOnboardingStep()
+        }
+    }
+    
+    // Determines if pressing back would return to the welcome/initial screen
+    // This is where we decide when to show the confirmation and reset data
+    private func wouldReturnToWelcome() -> Bool {
+        guard case .onboarding(let currentStep) = viewModel.appFlowState else { return false }
+        
+        // Special case for the first screen
+        if case .howDidYouHearAboutUs = currentStep {
+            return true
+        }
+        
+        // For other screens, check if they directly navigate to welcome
+        // This covers cases where other screens might go straight to welcome
+        // due to special navigation rules or errors
+        let previousStep = calculatePreviousStepLocally(from: currentStep)
+        return previousStep == nil // nil previous step means we'd go to welcome
+    }
+    
+    // Simplified local version to avoid circular dependencies
+    private func calculatePreviousStepLocally(from currentStep: OnboardingStep) -> OnboardingStep? {
+        switch currentStep {
+        case .getName:
+            return .howDidYouHearAboutUs
+        case .howDidYouHearAboutUs:
+            return nil // Indicates return to welcome
+        case .riasecQuestions(let dimension):
+            // For RIASEC questions, we need to handle going back through dimensions
+            // or back to interests for the first dimension
+            switch dimension {
+            case .investigative:
+                return .riasecQuestions(dimension: .realistic)
+            case .artistic:
+                return .riasecQuestions(dimension: .investigative)
+            case .social:
+                return .riasecQuestions(dimension: .artistic)
+            case .enterprising:
+                return .riasecQuestions(dimension: .social)
+            case .conventional:
+                return .riasecQuestions(dimension: .enterprising)
+            case .realistic:
+                return .interests
+            }
+        default:
+            // For other steps, we don't need exact calculation since we just want
+            // to know if it returns to welcome, which only happens with .howDidYouHearAboutUs
+            return .howDidYouHearAboutUs // Default non-nil value for other steps
+        }
     }
 }
 
@@ -953,20 +1047,20 @@ struct MotivationalMessageView: View {
 
 struct InterestProfileView: View {
     @ObservedObject var viewModel: AppViewModel
-    @State private var selectedInterests: Set<String> = []
+    @State private var selectedInterests: Set<InterestOption> = []
     
     private let interestCategories = [
-        "Technology & Computing",
-        "Science & Research",
-        "Arts & Design",
-        "Business & Finance",
-        "Healthcare & Medicine",
-        "Education & Teaching",
-        "Engineering",
-        "Communication & Media",
-        "Helping & Social Services",
-        "Nature & Environment",
-        "Sports & Athletics"
+        InterestOption(name: "Technology & Computing"),
+        InterestOption(name: "Science & Research"),
+        InterestOption(name: "Arts & Design"),
+        InterestOption(name: "Business & Finance"),
+        InterestOption(name: "Healthcare & Medicine"),
+        InterestOption(name: "Education & Teaching"),
+        InterestOption(name: "Engineering"),
+        InterestOption(name: "Communication & Media"),
+        InterestOption(name: "Helping & Social Services"),
+        InterestOption(name: "Nature & Environment"),
+        InterestOption(name: "Sports & Athletics")
     ]
     
     var body: some View {
@@ -984,17 +1078,17 @@ struct InterestProfileView: View {
             
             ScrollView {
                 VStack(spacing: 12) {
-                    ForEach(interestCategories, id: \.self) { interest in
+                    ForEach(interestCategories, id: \.id) { interest in
                         Button(action: {
                             if selectedInterests.contains(interest) {
                                 selectedInterests.remove(interest)
                             } else if selectedInterests.count < 5 {
                                 selectedInterests.insert(interest)
                             }
-                            viewModel.userData[.interests] = Array(selectedInterests) as AnyHashable
+                            viewModel.userData[.interests] = selectedInterests
                         }) {
                             HStack {
-                                Text(interest)
+                                Text(interest.name)
                                     .foregroundColor(.primary)
                                     .font(.body)
                                 
@@ -1028,12 +1122,17 @@ struct InterestProfileView: View {
                     .font(.caption)
                     .foregroundColor(.red)
                     .padding(.top, 8)
+            } else if selectedInterests.count > 5 {
+                Text("Please select no more than 5 interests")
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.top, 8)
             }
         }
         .padding()
         .onAppear {
-            if let savedInterests = viewModel.userData[.interests] as? [String] {
-                selectedInterests = Set(savedInterests)
+            if let savedInterests = viewModel.userData[.interests] as? Set<InterestOption> {
+                selectedInterests = savedInterests
             }
         }
     }
@@ -1042,6 +1141,9 @@ struct InterestProfileView: View {
 struct RIASECQuestionView: View {
     @ObservedObject var viewModel: AppViewModel
     let dimension: RIASECDimension
+    
+    // Use a @State property wrapper that's initialized from the global state
+    // but updates immediately when changed to provide responsive UI
     @State private var responses: [String: Int] = [:]
     
     private var questions: [String] {
@@ -1099,40 +1201,64 @@ struct RIASECQuestionView: View {
                         .font(.body)
                         .padding(.bottom, 4)
                     
-                    HStack {
-                        ForEach(1..<6) { rating in
-                            Button(action: {
-                                responses[question] = rating
-                                updateRIASECResponses()
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(responses[question] == rating ? Color.blue : Color.gray.opacity(0.2))
-                                        .frame(width: 40, height: 40)
-                                    
-                                    Text("\(rating)")
-                                        .foregroundColor(responses[question] == rating ? .white : .primary)
-                                        .font(.headline)
+                    VStack(spacing: 12) {
+                        HStack(spacing: 0) {
+                            ForEach(1..<6) { rating in
+                                // Add a connecting line before each circle except the first one
+                                if rating > 1 {
+                                    // Line connecting the previous and current circle
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(height: 2)
+                                        .padding(.horizontal, 5)
                                 }
+                                
+                                Button(action: {
+                                    responses[question] = rating
+                                    updateRIASECResponses()
+                                }) {
+                                    ZStack {
+                                        // Actual colored circle on top
+                                        Circle()
+                                            .fill(responses[question] == rating ? Color.blue : Color.gray.opacity(0.2))
+                                            .frame(
+                                                width: responses[question] == rating ? 46 : 40, 
+                                                height: responses[question] == rating ? 46 : 40
+                                            )
+                                            .shadow(
+                                                color: responses[question] == rating ? Color.blue.opacity(0.3) : Color.clear, 
+                                                radius: 4, 
+                                                x: 0, 
+                                                y: 2
+                                            )
+                                        
+                                        Text("\(rating)")
+                                            .foregroundColor(responses[question] == rating ? .white : .primary)
+                                            .font(.headline)
+                                    }
+                                    .animation(.spring(response: 0.3), value: responses[question] == rating)
+                                }
+                                .frame(maxWidth: .infinity)
                             }
+                        }
+                        
+                        HStack(spacing: 0) {
+                            Text("Strongly Disagree")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Spacer()
+                            
+                            Text("Strongly Agree")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }
                     .padding(.bottom, 16)
                 }
             }
-            
-            HStack {
-                Text("Strongly Disagree")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                Text("Strongly Agree")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            .padding(.horizontal, 10)
         }
         .padding()
         .onAppear {
@@ -1141,21 +1267,97 @@ struct RIASECQuestionView: View {
     }
     
     private func updateRIASECResponses() {
-        // Get existing responses or create new dictionary
-        var riasecResponses = viewModel.userData[.riasecResponses] as? [String: [String: Int]] ?? [:]
+        // Create a wrapper for RIASEC responses to ensure dimension-specific storage
+        // This helps with tracking responses across dimensions
         
-        // Update the dimension's responses
-        riasecResponses[dimension.rawValue] = responses
+        // First try to get the existing RIASEC responses from the central state
+        let existingResponses = viewModel.userData[.riasecResponses] as? [String: Any] ?? [:]
+        var updatedResponses = existingResponses
         
-        // Save back to user data
-        viewModel.userData[.riasecResponses] = riasecResponses as AnyHashable
+        // Create a dictionary representation that can be stored in userData
+        var responsesDict: [String: Any] = [:]
+        
+        // Convert the responses dictionary to a JSON-compatible format
+        for (question, rating) in responses {
+            responsesDict[question] = rating
+        }
+        
+        // Store the responses for this dimension
+        // Use dimension as the key to separate responses by dimension
+        updatedResponses[dimension.rawValue] = responsesDict
+        
+        // Save to the central state - we need a dictionary with Hashable values
+        let hashableResponses: [String: AnyHashable] = updatedResponses.reduce(into: [:]) { result, pair in
+            // Convert each value to AnyHashable if possible
+            if let intDict = pair.value as? [String: Int] {
+                result[pair.key] = intDict as AnyHashable
+            } else {
+                result[pair.key] = pair.value as? AnyHashable
+            }
+        }
+        viewModel.userData[.riasecResponses] = hashableResponses
+        
+        // Also maintain a flattened version for other UI components that need all responses
+        var flattenedResponses: [String: Int] = [:]
+        
+        // Merge all dimension responses into a flat dictionary
+        for (_, dimensionData) in updatedResponses {
+            if let dimensionDict = dimensionData as? [String: Int] {
+                for (question, rating) in dimensionDict {
+                    flattenedResponses[question] = rating
+                }
+            }
+        }
+        
+        // Store the flattened representation as dictionary (already hashable)
+        viewModel.userData[.riasecResponsesFlat] = flattenedResponses
+        
+        // Force UI to refresh - ensure all observers are notified
+        viewModel.objectWillChange.send()
+        
+        // Debug info
+        let answeredInThisDimension = responses.count
+        let totalQuestions = questions.count
+        print("Updated RIASEC responses: \(answeredInThisDimension)/\(totalQuestions) questions answered in '\(dimension.rawValue)' dimension")
+        print("RIASEC dimensions with data: \(updatedResponses.keys.joined(separator: ", "))")
     }
     
     private func loadSavedResponses() {
-        if let riasecResponses = viewModel.userData[.riasecResponses] as? [String: [String: Int]],
-           let dimensionResponses = riasecResponses[dimension.rawValue] {
-            responses = dimensionResponses
+        // First clear responses to avoid showing stale data
+        responses = [:]
+        
+        // Get the RIASEC responses from the central state
+        if let allDimensionsResponses = viewModel.userData[.riasecResponses] as? [String: Any] {
+            // Check for responses specific to the current dimension
+            if let dimensionResponses = allDimensionsResponses[dimension.rawValue] as? [String: Int] {
+                // Load the responses for this dimension
+                responses = dimensionResponses
+                print("Loaded \(responses.count) existing responses for dimension '\(dimension.rawValue)' from dimension-specific data")
+                return
+            }
         }
+        
+        // Fallback to flat responses if dimension-specific not found
+        if let flatResponses = viewModel.userData[.riasecResponsesFlat] as? [String: Int] {
+            // Filter for questions relevant to this dimension
+            for question in questions {
+                if let rating = flatResponses[question] {
+                    responses[question] = rating
+                }
+            }
+            print("Loaded \(responses.count) existing responses for dimension '\(dimension.rawValue)' from flat data")
+            return
+        }
+        
+        // Legacy format support (can be removed eventually)
+        if let legacyResponses = viewModel.userData[.riasecResponses] as? [String: [String: Int]],
+           let legacyDimensionResponses = legacyResponses[dimension.rawValue] {
+            responses = legacyDimensionResponses
+            print("Loaded \(responses.count) existing responses for dimension '\(dimension.rawValue)' from legacy format")
+            return
+        }
+        
+        print("No existing responses found for dimension '\(dimension.rawValue)'")
     }
 }
 
@@ -1163,10 +1365,34 @@ struct LoadingScreenView: View {
     @ObservedObject var viewModel: AppViewModel
     
     var body: some View {
-        VStack {
+        VStack(spacing: 30) {
+            // Larger progress view
             ProgressView()
-            Text("Processing your responses...")
+                .scaleEffect(1.5)
                 .padding()
+            
+            Text("Processing your responses...")
+                .font(.title3)
+                .foregroundColor(.secondary)
+                .padding()
+                
+            // Start generation as soon as view appears
+            Text("Analyzing your interests and skills...")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .padding(.top, 20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            // Safety mechanism: move to completion screen after 5 seconds max
+            // in case the async task somehow gets stuck
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                if case .onboarding(let currentStep) = viewModel.appFlowState, 
+                   currentStep == .loadingScreen {
+                    print("Safety timeout triggered for loading screen")
+                    viewModel.appFlowState = .onboarding(step: .completionScreen)
+                }
+            }
         }
     }
 }
@@ -1578,4 +1804,12 @@ struct HelpSheetView: View {
 struct InterestOption: Identifiable, Hashable {
     let id = UUID()
     let name: String
+    
+    static func == (lhs: InterestOption, rhs: InterestOption) -> Bool {
+        return lhs.name == rhs.name
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+    }
 }

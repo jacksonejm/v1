@@ -1,0 +1,334 @@
+openapi: 3.0.3
+info:
+  title: MyPath AI Integration API
+  description: API for integrating AI assistance with MyPath onboarding
+  version: 0.1.0
+servers:
+  - url: https://api.mypath.example.com/v1
+    description: Production server
+  - url: https://staging-api.mypath.example.com/v1
+    description: Staging server
+  - url: https://dev-api.mypath.example.com/v1
+    description: Development server
+
+paths:
+  /ai/parse:
+    post:
+      summary: Parse user message for onboarding field data
+      description: Extracts structured data from a user message for a specific onboarding step
+      operationId: parseUserMessage
+      tags:
+        - AI Integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParseRequest'
+      responses:
+        '200':
+          description: Successfully parsed user message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParseResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai/commit:
+    post:
+      summary: Commit parsed data to user profile
+      description: Validates and commits the parsed data to the user's profile
+      operationId: commitParsedData
+      tags:
+        - AI Integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommitRequest'
+      responses:
+        '200':
+          description: Successfully committed data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitResponse'
+        '400':
+          description: Invalid request or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ParseRequest:
+      type: object
+      required:
+        - message
+        - step
+        - sessionId
+        - previousValues
+      properties:
+        message:
+          type: string
+          description: The user's message to parse
+          example: "I heard about your app from a friend named Sarah"
+        step:
+          type: string
+          description: The current onboarding step ID
+          example: "howDidYouHearAboutUs"
+        sessionId:
+          type: string
+          description: Session identifier for continuity and logging
+          example: "sess_abcd1234"
+        previousValues:
+          type: object
+          description: Any previously captured values for context
+          additionalProperties: true
+          example:
+            name: "John"
+        messageHistory:
+          type: array
+          description: Optional chat history for context
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+
+    ParseResponse:
+      type: object
+      required:
+        - success
+        - parsed
+      properties:
+        success:
+          type: boolean
+          description: Whether parsing was successful
+        parsed:
+          type: object
+          description: The parsed field values
+          properties:
+            field:
+              type: string
+              description: The field identifier that was parsed
+              example: "howDidYouHearAboutUs"
+            value:
+              type: object
+              description: The parsed value
+              example:
+                type: "selection"
+                value: "Friend or Family"
+            confidence:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Confidence score for the parsing (0-1)
+              example: 0.95
+        followupQuestion:
+          type: string
+          description: Optional follow-up question if confidence is low
+          example: "Could you clarify if you heard about us from a friend, social media, or somewhere else?"
+
+    CommitRequest:
+      type: object
+      required:
+        - sessionId
+        - field
+        - value
+        - step
+      properties:
+        sessionId:
+          type: string
+          description: Session identifier for continuity and logging
+          example: "sess_abcd1234"
+        field:
+          type: string
+          description: The field identifier to update
+          example: "howDidYouHearAboutUs"
+        value:
+          type: object
+          description: The value to commit
+          example:
+            type: "selection"
+            value: "Friend or Family"
+        step:
+          type: string
+          description: The current onboarding step ID
+          example: "howDidYouHearAboutUs"
+        snapshot:
+          type: object
+          description: Optional before-commit snapshot of all user data for logging
+          additionalProperties: true
+
+    CommitResponse:
+      type: object
+      required:
+        - success
+        - field
+        - action
+      properties:
+        success:
+          type: boolean
+          description: Whether the commit was successful
+        field:
+          type: string
+          description: The field that was updated
+          example: "howDidYouHearAboutUs"
+        action:
+          type: string
+          enum: [created, updated, unchanged]
+          description: The action that was taken
+          example: "updated"
+        validationMessage:
+          type: string
+          description: Optional message if validation was applied
+          example: "Modified input to match available options"
+        userDataSnapshot:
+          type: object
+          description: Current snapshot of user data after the commit
+          additionalProperties: true
+
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - content
+        - isUser
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique message identifier
+        content:
+          type: string
+          description: Message content
+        isUser:
+          type: boolean
+          description: Whether the message is from the user
+        timestamp:
+          type: string
+          format: date-time
+          description: Message timestamp
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "validation_error"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "The provided field value is invalid"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: AI Integration
+    description: AI integration endpoints for the onboarding process
+
+# Example Request and Response for /ai/parse endpoint for name field
+examples:
+  nameParseRequest:
+    value:
+      message: "My name is John Smith"
+      step: "getName"
+      sessionId: "sess_1234abcd"
+      previousValues: {}
+
+  nameParseResponse:
+    value:
+      success: true
+      parsed:
+        field: "name"
+        value:
+          type: "string"
+          value: "John Smith"
+        confidence: 0.98
+
+# Example Request and Response for /ai/commit endpoint for name field
+  nameCommitRequest:
+    value:
+      sessionId: "sess_1234abcd"
+      field: "name"
+      value:
+        type: "string"
+        value: "John Smith"
+      step: "getName"
+      
+  nameCommitResponse:
+    value:
+      success: true
+      field: "name"
+      action: "created"
+      userDataSnapshot:
+        name: "John Smith"
+
+# Example Request and Response for /ai/parse endpoint for referral source
+  referralParseRequest:
+    value:
+      message: "I found out about your app from my friend"
+      step: "howDidYouHearAboutUs"
+      sessionId: "sess_1234abcd"
+      previousValues: {}
+
+  referralParseResponse:
+    value:
+      success: true
+      parsed:
+        field: "howDidYouHearAboutUs"
+        value:
+          type: "selection"
+          value: "Friend or Family"
+        confidence: 0.92

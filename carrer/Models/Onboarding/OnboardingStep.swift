@@ -34,4 +34,40 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
     }
     
     var id: Self { self }
+    
+    /// Compare two OnboardingSteps ignoring associated data
+    /// This helps with navigation history to identify steps regardless of their data
+    func matchesWithoutData(_ other: OnboardingStep) -> Bool {
+        switch (self, other) {
+        case (.howDidYouHearAboutUs, .howDidYouHearAboutUs),
+             (.getName, .getName),
+             (.welcomeMessage, .welcomeMessage),
+             (.currentStatus, .currentStatus),
+             (.studentLevel, .studentLevel),
+             (.motivationalMessage, .motivationalMessage),
+             (.interests, .interests),
+             (.favoriteSubjects, .favoriteSubjects),
+             (.extracurriculars, .extracurriculars),
+             (.careerInterests, .careerInterests),
+             (.loadingScreen, .loadingScreen),
+             (.completionScreen, .completionScreen):
+            return true
+            
+        case (.riasecQuestions(let dim1), .riasecQuestions(let dim2)):
+            return dim1 == dim2
+            
+        default:
+            return false
+        }
+    }
+    
+    /// Get a step without associated data for history tracking
+    var withoutData: OnboardingStep {
+        switch self {
+        case .welcomeMessage:
+            return .welcomeMessage(name: "")
+        default:
+            return self
+        }
+    }
 }
