@@ -44,37 +44,37 @@ class OpenAIService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         
-        // Create streaming publisher
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { data, response -> Data in
-                guard let httpResponse = response as? HTTPURLResponse else {
+        // Create streaming publisher using async bytes
+        let subject = PassthroughSubject<ResponseChunk, Error>()
+
+        Task {
+            do {
+                let (bytes, response) = try await URLSession.shared.bytes(for: request)
+
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
                     throw APIError.invalidResponse
                 }
-                
-                guard httpResponse.statusCode == 200 else {
-                    throw APIError.requestFailed(statusCode: httpResponse.statusCode, message: String(data: data, encoding: .utf8) ?? "Unknown error")
+
+                for try await line in bytes.lines {
+                    let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed == "data: [DONE]" { break }
+                    guard trimmed.hasPrefix("data: ") else { continue }
+                    let jsonString = String(trimmed.dropFirst(6))
+                    if let data = jsonString.data(using: .utf8) {
+                        let chunk = try self.processChunk(data)
+                        subject.send(chunk)
+                    }
                 }
-                
-                return data
+
+                subject.send(.end)
+                subject.send(completion: .finished)
+            } catch {
+                subject.send(completion: .failure(error))
             }
-            .flatMap { data -> AnyPublisher<ResponseChunk, Error> in
-                // Split the data by lines (SSE format)
-                let lines = String(data: data, encoding: .utf8)?.components(separatedBy: "\n") ?? []
-                
-                // Process each line
-                return lines.publisher
-                    .filter { !$0.isEmpty && $0 != "data: [DONE]" }
-                    .compactMap { line -> Data? in
-                        guard line.hasPrefix("data: ") else { return nil }
-                        let jsonString = String(line.dropFirst(6))
-                        return jsonString.data(using: .utf8)
-                    }
-                    .tryMap { jsonData -> ResponseChunk in
-                        try self.processChunk(jsonData)
-                    }
-                    .eraseToAnyPublisher()
-            }
-            .eraseToAnyPublisher()
+        }
+
+        return subject.eraseToAnyPublisher()
     }
     
     // MARK: - Helper Methods

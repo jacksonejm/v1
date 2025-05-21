@@ -3,9 +3,16 @@ import SwiftUI
 struct OnboardingView: View {
     @ObservedObject var viewModel: AppViewModel
     let step: OnboardingStep
+    @EnvironmentObject var onboardingStore: OnboardingStore
     @State var showAccountCreationPrompt = false
     @State var showAIAssistant = false
-    @StateObject var aiAssistantViewModel = AIAssistantViewModel()
+    @StateObject var aiAssistantViewModel: AIAssistantViewModel
+
+    init(viewModel: AppViewModel, step: OnboardingStep, onboardingStore: OnboardingStore) {
+        self.viewModel = viewModel
+        self.step = step
+        _aiAssistantViewModel = StateObject(wrappedValue: AIAssistantViewModel(onboardingStore: onboardingStore))
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -147,7 +154,7 @@ struct OnboardingView: View {
         
         switch step {
         case .howDidYouHearAboutUs:
-            if let selection = viewModel.userData[.howDidYouHearAboutUs] as? SelectionOption {
+            if let selection: SelectionOption = onboardingStore.value(for: .howDidYouHearAboutUs) {
                 let message = "The user has selected: \(selection.title)"
                 Task {
                     await aiAssistantViewModel.conversationStore.sendMessage(message, forStep: "system_context")
@@ -155,7 +162,7 @@ struct OnboardingView: View {
             }
             
         case .getName:
-            if let name = viewModel.userData[.name] as? String, !name.isEmpty {
+            if let name: String = onboardingStore.value(for: .name), !name.isEmpty {
                 let message = "The user has entered name: \(name)"
                 Task {
                     await aiAssistantViewModel.conversationStore.sendMessage(message, forStep: "system_context")
@@ -163,7 +170,7 @@ struct OnboardingView: View {
             }
             
         case .interests:
-            if let interests = viewModel.userData[.interests] as? Set<InterestOption>, !interests.isEmpty {
+            if let interests: Set<InterestOption> = onboardingStore.value(for: .interests), !interests.isEmpty {
                 let interestNames = interests.map { $0.name }.joined(separator: ", ")
                 let message = "The user has selected these interests: \(interestNames)"
                 Task {

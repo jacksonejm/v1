@@ -3,6 +3,7 @@ import Combine
 import CoreData
 import FirebaseAuth
 
+@MainActor
 class ConversationStore: ObservableObject {
     // Published properties
     @Published var currentConversation: Conversation?
