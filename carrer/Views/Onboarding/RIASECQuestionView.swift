@@ -9,53 +9,17 @@ struct RIASECQuestionView: View {
     @State private var responses: [String: Int] = [:]
     
     private var questions: [String] {
-        switch dimension {
-        case .realistic:
-            return [
-                "I enjoy working with my hands or tools",
-                "I like repairing things",
-                "I prefer practical, hands-on problems over abstract ones"
-            ]
-        case .investigative:
-            return [
-                "I enjoy solving puzzles or complex problems",
-                "I like to analyze information and data",
-                "I'm curious about how things work"
-            ]
-        case .artistic:
-            return [
-                "I appreciate creativity and self-expression",
-                "I enjoy artistic activities like writing, music, or design",
-                "I tend to think outside the box"
-            ]
-        case .social:
-            return [
-                "I enjoy helping others learn or grow",
-                "I'm good at understanding how people feel",
-                "I like working in groups or teams"
-            ]
-        case .enterprising:
-            return [
-                "I enjoy persuading or leading others",
-                "I like starting or organizing activities",
-                "I'm comfortable taking risks"
-            ]
-        case .conventional:
-            return [
-                "I enjoy working with clear rules and structure",
-                "I'm good at organizing information or data",
-                "I pay attention to details and accuracy"
-            ]
-        }
+        dimension.questions
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Removed duplicate header - already provided by OnboardingView
-            
-            Text("How much do you agree with each statement? This will help us understand your \(dimension.rawValue.lowercased()) interests.")
-                .foregroundColor(.secondary)
-                .padding(.bottom, 20)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Removed duplicate header - already provided by OnboardingView
+
+                Text("How much do you agree with each statement? This will help us understand your \(dimension.rawValue.lowercased()) interests.")
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 20)
             
             ForEach(questions, id: \.self) { question in
                 VStack(alignment: .leading, spacing: 8) {
@@ -121,8 +85,9 @@ struct RIASECQuestionView: View {
                     .padding(.bottom, 16)
                 }
             }
+            }
+            .padding()
         }
-        .padding()
         .onAppear {
             loadSavedResponses()
             print("RIASECQuestionView appeared for \(dimension.rawValue) dimension")

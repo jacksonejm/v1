@@ -29,4 +29,46 @@ enum RIASECDimension: String, CaseIterable {
         case .conventional: return "Do you enjoy organizing and following procedures?"
         }
     }
+
+    /// The three questions used for this RIASEC dimension
+    var questions: [String] {
+        switch self {
+        case .realistic:
+            return [
+                "I enjoy working with my hands or tools",
+                "I like repairing things",
+                "I prefer practical, hands-on problems over abstract ones",
+            ]
+        case .investigative:
+            return [
+                "I enjoy solving puzzles or complex problems",
+                "I like to analyze information and data",
+                "I'm curious about how things work",
+            ]
+        case .artistic:
+            return [
+                "I appreciate creativity and self-expression",
+                "I enjoy artistic activities like writing, music, or design",
+                "I tend to think outside the box",
+            ]
+        case .social:
+            return [
+                "I enjoy helping others learn or grow",
+                "I'm good at understanding how people feel",
+                "I like working in groups or teams",
+            ]
+        case .enterprising:
+            return [
+                "I enjoy persuading or leading others",
+                "I like starting or organizing activities",
+                "I'm comfortable taking risks",
+            ]
+        case .conventional:
+            return [
+                "I enjoy working with clear rules and structure",
+                "I'm good at organizing information or data",
+                "I pay attention to details and accuracy",
+            ]
+        }
+    }
 }
