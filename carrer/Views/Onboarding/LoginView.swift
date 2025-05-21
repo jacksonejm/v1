@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct LoginView: View {
     @ObservedObject var viewModel: AppViewModel
@@ -69,9 +70,25 @@ struct LoginView: View {
             
             // Sign in button
             Button(action: {
-                // This would handle sign in logic in a real app
-                // For demo purpose, navigate to dashboard
-                viewModel.navigateTo(.dashboard)
+                guard !email.isEmpty, !password.isEmpty else {
+                    alertMessage = "Please enter your email and password."
+                    showingAlert = true
+                    return
+                }
+
+                viewModel.isLoading = true
+                Auth.auth().signIn(withEmail: email, password: password) { _, error in
+                    DispatchQueue.main.async {
+                        viewModel.isLoading = false
+
+                        if let error = error {
+                            alertMessage = error.localizedDescription
+                            showingAlert = true
+                        } else {
+                            viewModel.navigateTo(.dashboard)
+                        }
+                    }
+                }
             }) {
                 HStack {
                     Spacer()
