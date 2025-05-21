@@ -83,14 +83,15 @@ struct RIASECQuestionView: View {
                                         // Actual colored circle on top
                                         Circle()
                                             .fill(responses[question] == rating ? Color.blue : Color.gray.opacity(0.2))
-                                            .frame(
-                                                width: responses[question] == rating ? 46 : 40, 
-                                                height: responses[question] == rating ? 46 : 40
+                                            .frame(width: 46, height: 46)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color.blue, lineWidth: responses[question] == rating ? 4 : 0)
                                             )
                                             .shadow(
-                                                color: responses[question] == rating ? Color.blue.opacity(0.3) : Color.clear, 
-                                                radius: 4, 
-                                                x: 0, 
+                                                color: responses[question] == rating ? Color.blue.opacity(0.3) : Color.clear,
+                                                radius: 4,
+                                                x: 0,
                                                 y: 2
                                             )
                                         
@@ -98,7 +99,6 @@ struct RIASECQuestionView: View {
                                             .foregroundColor(responses[question] == rating ? .white : .primary)
                                             .font(.headline)
                                     }
-                                    .animation(.spring(response: 0.3), value: responses[question] == rating)
                                 }
                                 .frame(maxWidth: .infinity)
                             }
