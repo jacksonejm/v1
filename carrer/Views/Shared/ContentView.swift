@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = AppViewModel()
+    @StateObject private var onboardingStore = OnboardingStore()
     @State private var isSplashScreenVisible = true
     
     var body: some View {
@@ -13,10 +14,12 @@ struct ContentView: View {
                     case .initial:
                         WelcomeView(viewModel: viewModel)
                     case .onboarding(let step):
-                        OnboardingView(viewModel: viewModel, step: step)
+                        OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
+                            .environmentObject(onboardingStore)
                     case .onboardingHelp(let step):
                         // Handle the help state - either show help directly or let OnboardingView handle it
-                        OnboardingView(viewModel: viewModel, step: step)
+                        OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
+                            .environmentObject(onboardingStore)
                     case .login:
                         LoginView(viewModel: viewModel)
                     case .dashboard:

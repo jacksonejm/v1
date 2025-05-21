@@ -13,13 +13,16 @@ class AIAssistantViewModel: ObservableObject {
     
     // MARK: - Private Properties
     let conversationStore: ConversationStore
+    private let onboardingStore: OnboardingStore
     private var currentStep: OnboardingStep?
     private var cancellables = Set<AnyCancellable>()
     private let networkMonitor = NetworkMonitor.shared
     
     // MARK: - Initialization
-    init(conversation: Conversation? = nil) {
+    init(onboardingStore: OnboardingStore, conversation: Conversation? = nil) {
+        self.onboardingStore = onboardingStore
         self.conversationStore = ConversationStore(conversation: conversation)
+        ToolRegistry.shared.registerTool(UpdateFieldTool(onboardingStore: onboardingStore))
         setupBindings()
         
         // Subscribe to network status changes
