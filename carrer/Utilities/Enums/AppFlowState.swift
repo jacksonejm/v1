@@ -4,8 +4,10 @@ enum AppFlowState: Hashable {
     case initial
     case login
     case dashboard
+    case onboardingModeSelection
     case onboarding(step: OnboardingStep)
     case onboardingHelp(step: OnboardingStep) // New state to track when help is being shown
+    case conversationalOnboarding
     
     func hash(into hasher: inout Hasher) {
         switch self {
@@ -21,6 +23,10 @@ enum AppFlowState: Hashable {
         case .onboardingHelp(let step):
             hasher.combine(4)
             hasher.combine(step)
+        case .onboardingModeSelection:
+            hasher.combine(5)
+        case .conversationalOnboarding:
+            hasher.combine(6)
         }
     }
     
@@ -36,6 +42,10 @@ enum AppFlowState: Hashable {
             return step1 == step2
         case (.onboardingHelp(let step1), .onboardingHelp(let step2)):
             return step1 == step2
+        case (.onboardingModeSelection, .onboardingModeSelection):
+            return true
+        case (.conversationalOnboarding, .conversationalOnboarding):
+            return true
         default:
             return false
         }

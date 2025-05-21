@@ -2,9 +2,9 @@ import Foundation
 
 class ToolRegistry {
     static let shared = ToolRegistry()
-    
+
     private var tools: [String: AITool] = [:]
-    
+
     private init() {
         // Register tools
     }
@@ -19,5 +19,19 @@ class ToolRegistry {
     
     func getAllTools() -> [AITool] {
         return Array(tools.values)
+    }
+
+    /// Return tool definitions in OpenAI function format
+    func getToolDefinitions() -> [[String: Any]] {
+        tools.values.map { tool in
+            [
+                "type": "function",
+                "function": [
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": tool.parametersSchema
+                ]
+            ]
+        }
     }
 }

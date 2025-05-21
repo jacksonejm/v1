@@ -51,7 +51,7 @@ struct WelcomeView: View {
             VStack(spacing: 16) {
                 // Get Started button
                 Button(action: {
-                    viewModel.navigateTo(.onboarding(step: .howDidYouHearAboutUs))
+                    viewModel.navigateTo(.onboardingModeSelection)
                 }) {
                     HStack {
                         Spacer()

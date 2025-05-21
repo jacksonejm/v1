@@ -13,6 +13,8 @@ struct ContentView: View {
                     switch viewModel.appFlowState {
                     case .initial:
                         WelcomeView(viewModel: viewModel)
+                    case .onboardingModeSelection:
+                        OnboardingModeSelectionView(viewModel: viewModel, onboardingStore: onboardingStore)
                     case .onboarding(let step):
                         OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
                             .environmentObject(onboardingStore)
@@ -20,6 +22,11 @@ struct ContentView: View {
                         // Handle the help state - either show help directly or let OnboardingView handle it
                         OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
                             .environmentObject(onboardingStore)
+                    case .conversationalOnboarding:
+                        // Placeholder for conversational onboarding view (to be implemented in Week 2)
+                        Text("Conversational Onboarding Coming Soon")
+                            .font(.largeTitle)
+                            .padding()
                     case .login:
                         LoginView(viewModel: viewModel)
                     case .dashboard:

@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+@MainActor
 class AIAssistantViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var messages: [ChatMessage] = []

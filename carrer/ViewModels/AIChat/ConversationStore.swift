@@ -3,6 +3,7 @@ import Combine
 import CoreData
 import FirebaseAuth
 
+@MainActor
 class ConversationStore: ObservableObject {
     // Published properties
     @Published var currentConversation: Conversation?
@@ -217,6 +218,34 @@ class ConversationStore: ObservableObject {
         case .toolCallEnd:
             // Handle end of tool call
             print("Tool call completed")
+
+            // After executing the tool, send its result back to OpenAI
+            if let lastMessage = messages.last, let results = lastMessage.toolResults,
+               let step = currentConversation?.step {
+                // Append a tool message so OpenAI can continue the conversation
+                let resultString: String
+                if let data = try? JSONSerialization.data(withJSONObject: results),
+                   let string = String(data: data, encoding: .utf8) {
+                    resultString = string
+                } else {
+                    resultString = "{}"
+                }
+
+                let toolMessage = ChatMessage(id: UUID(), content: resultString, isUser: false, timestamp: Date())
+                messages.append(toolMessage)
+
+                if var conversation = currentConversation {
+                    conversation.messages = messages
+                    currentConversation = conversation
+                }
+
+                // Restart streaming with the tool result
+                messageStream?.cancel()
+                Task { [self] in
+                    await getAIResponse(for: step)
+                }
+            }
+
             break
             
         case .end:
@@ -554,3 +583,4 @@ class ConversationStore: ObservableObject {
         return "You are an AI assistant helping a user with their career path. Be helpful, concise, and supportive."
     }
 }
+

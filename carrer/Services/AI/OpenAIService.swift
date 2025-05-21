@@ -21,8 +21,8 @@ class OpenAIService {
         // Convert messages to OpenAI format
         let openAIMessages = formatMessages(messages, systemPrompt: systemPrompt)
         
-        // Define tools - we'll implement this later
-        let tools: [[String: Any]] = [] // For now, empty
+        // Include any registered tools so the model can call them
+        let tools = ToolRegistry.shared.getToolDefinitions()
         
         // Create request body
         let requestBody: [String: Any] = [
