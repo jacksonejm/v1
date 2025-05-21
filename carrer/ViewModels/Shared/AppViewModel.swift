@@ -231,46 +231,8 @@ class AppViewModel: ObservableObject {
         // Update tracking of completed dimensions
         var completedDimensions = userData[.riasecDimensions] as? [String] ?? []
         
-        // Get the questions for this dimension - simplified version of what's in RIASECQuestionView
-        let dimensionQuestions: [String]
-        switch dimension {
-        case .realistic:
-            dimensionQuestions = [
-                "I enjoy working with my hands or tools",
-                "I like repairing things",
-                "I prefer practical, hands-on problems over abstract ones"
-            ]
-        case .investigative:
-            dimensionQuestions = [
-                "I enjoy solving puzzles or complex problems",
-                "I like to analyze information and data",
-                "I'm curious about how things work"
-            ]
-        case .artistic:
-            dimensionQuestions = [
-                "I appreciate creativity and self-expression",
-                "I enjoy artistic activities like writing, music, or design",
-                "I tend to think outside the box"
-            ]
-        case .social:
-            dimensionQuestions = [
-                "I enjoy helping others learn or grow",
-                "I'm good at understanding how people feel",
-                "I like working in groups or teams"
-            ]
-        case .enterprising:
-            dimensionQuestions = [
-                "I enjoy persuading or leading others",
-                "I like starting or organizing activities",
-                "I'm comfortable taking risks"
-            ]
-        case .conventional:
-            dimensionQuestions = [
-                "I enjoy working with clear rules and structure",
-                "I'm good at organizing information or data",
-                "I pay attention to details and accuracy"
-            ]
-        }
+        // Use the canonical questions for this dimension
+        let dimensionQuestions = dimension.questions
         
         // Mark dimension as completed if all questions are answered
         if !completedDimensions.contains(dimension.rawValue) && responses.count >= dimensionQuestions.count {
@@ -466,45 +428,7 @@ class AppViewModel: ObservableObject {
         // If we don't have dimension-specific responses, try to extract them from the flattened format
         if let flatResponses = userData[.riasecResponsesFlat] as? [String: Int] {
             // Get questions for this dimension (simplified version of what's in RIASECQuestionView)
-            let dimensionQuestions: [String]
-            switch dimension {
-            case .realistic:
-                dimensionQuestions = [
-                    "I enjoy working with my hands or tools",
-                    "I like repairing things",
-                    "I prefer practical, hands-on problems over abstract ones"
-                ]
-            case .investigative:
-                dimensionQuestions = [
-                    "I enjoy solving puzzles or complex problems",
-                    "I like to analyze information and data",
-                    "I'm curious about how things work"
-                ]
-            case .artistic:
-                dimensionQuestions = [
-                    "I appreciate creativity and self-expression",
-                    "I enjoy artistic activities like writing, music, or design",
-                    "I tend to think outside the box"
-                ]
-            case .social:
-                dimensionQuestions = [
-                    "I enjoy helping others learn or grow",
-                    "I'm good at understanding how people feel",
-                    "I like working in groups or teams"
-                ]
-            case .enterprising:
-                dimensionQuestions = [
-                    "I enjoy persuading or leading others",
-                    "I like starting or organizing activities",
-                    "I'm comfortable taking risks"
-                ]
-            case .conventional:
-                dimensionQuestions = [
-                    "I enjoy working with clear rules and structure",
-                    "I'm good at organizing information or data",
-                    "I pay attention to details and accuracy"
-                ]
-            }
+            let dimensionQuestions = dimension.questions
             
             // Extract responses for this dimension from the flattened format
             var dimensionResponses: [String: Int] = [:]
