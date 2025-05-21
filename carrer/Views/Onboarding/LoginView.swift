@@ -148,6 +148,21 @@ struct LoginView: View {
             .padding(.bottom, 20)
         }
         .padding()
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    viewModel.navigateTo(.initial)
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColors.primary)
+                        .padding(8)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+        }
         .alert(isPresented: $showingAlert) {
             Alert(
                 title: Text("Error"),
