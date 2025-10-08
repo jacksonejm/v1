@@ -1,18 +1,21 @@
 import SwiftUI
+import Combine
 
 struct OnboardingModeSelectionView: View {
-    @ObservedObject var viewModel: AppViewModel
-    @ObservedObject var onboardingStore: OnboardingStore
-    @StateObject private var modeManager: OnboardingModeManager
+    @EnvironmentObject var viewModel: AppViewModel
+    @EnvironmentObject var onboardingStore: OnboardingStore
     @State private var selectedMode: OnboardingMode?
-    @State private var showingConversationalPreview = false
     @State private var animateIn = false
     
-    init(viewModel: AppViewModel, onboardingStore: OnboardingStore) {
-        self.viewModel = viewModel
-        self.onboardingStore = onboardingStore
-        _modeManager = StateObject(wrappedValue: OnboardingModeManager(onboardingStore: onboardingStore))
-    }
+    // Error handling states
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
+    // Loading state
+    @State private var isNavigating = false
+    
+    // Network monitoring
+    @State private var isNetworkAvailable = true
     
     var body: some View {
         ZStack {
@@ -24,29 +27,12 @@ struct OnboardingModeSelectionView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 40) {
-                // Navigation bar with back button
-                HStack {
-                    Button(action: { navigateBack() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 18, weight: .medium))
-                            Text("Back")
-                                .font(.system(size: 17))
-                        }
-                        .foregroundColor(.blue)
-                    }
-                    .opacity(animateIn ? 1 : 0)
-                    
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)
+            VStack(spacing: 32) {
                 
-                // Header
+                // Header Section
                 VStack(spacing: 16) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 60))
+                        .font(.system(size: 50))
                         .foregroundColor(.blue)
                         .scaleEffect(animateIn ? 1 : 0.5)
                         .opacity(animateIn ? 1 : 0)
@@ -62,19 +48,19 @@ struct OnboardingModeSelectionView: View {
                         .foregroundColor(.secondary)
                         .opacity(animateIn ? 1 : 0)
                         .offset(y: animateIn ? 0 : 20)
+                        .multilineTextAlignment(.center)
                 }
-                .padding(.top, 20)
-                
-                Spacer()
+                .padding(.top, 60)
                 
                 // Mode selection cards
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // AI Conversation option (Primary)
                     ModeSelectionCard(
                         mode: .conversational,
                         isSelected: selectedMode == .conversational,
                         isPrimary: true,
-                        animateIn: animateIn
+                        animateIn: animateIn,
+                        isNetworkAvailable: isNetworkAvailable
                     ) {
                         selectMode(.conversational)
                     }
@@ -85,56 +71,79 @@ struct OnboardingModeSelectionView: View {
                         mode: .traditional,
                         isSelected: selectedMode == .traditional,
                         isPrimary: false,
-                        animateIn: animateIn
+                        animateIn: animateIn,
+                        isNetworkAvailable: true // Always available
                     ) {
                         selectMode(.traditional)
                     }
                     .offset(x: animateIn ? 0 : 50)
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
                 
                 Spacer()
                 
                 // Continue button
-                if let selected = selectedMode {
-                    Button(action: { startOnboarding(with: selected) }) {
-                        HStack {
-                            Text("Continue with \(selected.displayName)")
-                            Image(systemName: "arrow.right")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(12)
+                Button(action: {
+                    if let selected = selectedMode {
+                        startOnboarding(with: selected)
                     }
-                    .padding(.horizontal)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }) {
+                    HStack(spacing: 8) {
+                        Text(selectedMode != nil ? "Continue with \(selectedMode!.displayName)" : "Continue")
+                        Image(systemName: "arrow.right")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(selectedMode != nil ? Color.blue : Color.gray.opacity(0.6))
+                    .cornerRadius(12)
                 }
-                
-                // Learn more link
-                Button(action: { showingConversationalPreview = true }) {
-                    Text("Learn more about AI conversation mode")
-                        .font(.footnote)
-                        .foregroundColor(.blue)
-                }
-                .padding(.bottom, 40)
+                .disabled(selectedMode == nil)
                 .opacity(animateIn ? 1 : 0)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { navigateBack() }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColors.primary)
+                        .padding(8)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(Circle())
+                }
             }
         }
         .onAppear {
+            // Check network status
+            checkNetworkAvailability()
+            
             withAnimation(.easeOut(duration: 0.8)) {
                 animateIn = true
             }
         }
-        .sheet(isPresented: $showingConversationalPreview) {
-            ConversationalModePreview()
+        .onReceive(NetworkMonitor.shared.$isConnected) { isConnected in
+            isNetworkAvailable = isConnected
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK") {
+                showError = false
+            }
+        } message: {
+            Text(errorMessage)
+        }
+        .overlay {
+            if isNavigating {
+                LoadingOverlay()
+            }
         }
     }
     
     private func navigateBack() {
-        // Navigate back to welcome view
         viewModel.navigateTo(.initial)
     }
     
@@ -148,9 +157,16 @@ struct OnboardingModeSelectionView: View {
     }
     
     private func startOnboarding(with mode: OnboardingMode) {
-        modeManager.selectMode(mode)
+        // Validate mode selection
+        guard validateModeSelection(mode) else { return }
         
-        // Update app flow state through view model
+        // Show loading state
+        isNavigating = true
+        
+        // Save mode selection
+        UserDefaults.standard.set(mode.rawValue, forKey: "selectedOnboardingMode")
+        
+        // Navigate immediately to avoid concurrency issues
         switch mode {
         case .conversational:
             viewModel.navigateTo(.conversationalOnboarding)
@@ -159,6 +175,27 @@ struct OnboardingModeSelectionView: View {
         case .unselected:
             break
         }
+        
+        // Reset loading state after a brief delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            isNavigating = false
+        }
+    }
+    
+    private func validateModeSelection(_ mode: OnboardingMode) -> Bool {
+        // Check network availability for AI mode
+        if mode == .conversational && !isNetworkAvailable {
+            showError = true
+            errorMessage = "AI conversation mode requires an internet connection. Please check your connection and try again."
+            return false
+        }
+        
+        return true
+    }
+    
+    private func checkNetworkAvailability() {
+        // Check if NetworkMonitor is available
+        isNetworkAvailable = NetworkMonitor.shared.isConnected
     }
 }
 
@@ -169,6 +206,7 @@ struct ModeSelectionCard: View {
     let isSelected: Bool
     let isPrimary: Bool
     let animateIn: Bool
+    let isNetworkAvailable: Bool
     let action: () -> Void
     
     var body: some View {
@@ -176,31 +214,52 @@ struct ModeSelectionCard: View {
             VStack(spacing: 16) {
                 // Icon
                 Image(systemName: mode.iconName)
-                    .font(.system(size: isPrimary ? 50 : 40))
+                    .font(.system(size: isPrimary ? 48 : 40))
                     .foregroundColor(iconColor)
                 
                 // Title
                 Text(mode.displayName)
                     .font(.headline)
+                    .fontWeight(.semibold)
                     .foregroundColor(textColor)
                 
                 // Description
                 Text(mode.description)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                // Primary badge
-                if isPrimary {
-                    Text("RECOMMENDED")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
+                // Badges
+                HStack(spacing: 8) {
+                    // Network status for AI mode
+                    if mode == .conversational && !isNetworkAvailable {
+                        HStack(spacing: 4) {
+                            Image(systemName: "wifi.slash")
+                                .font(.caption2)
+                            Text("OFFLINE")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                        }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 4)
-                        .background(Color.green)
-                        .cornerRadius(12)
+                        .background(Color.orange)
+                        .cornerRadius(10)
+                    }
+                    
+                    // Primary badge
+                    if isPrimary && isNetworkAvailable {
+                        Text("RECOMMENDED")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.green)
+                            .cornerRadius(12)
+                    }
                 }
             }
             .frame(maxWidth: .infinity)
@@ -222,6 +281,8 @@ struct ModeSelectionCard: View {
         .buttonStyle(ScaleButtonStyle())
         .opacity(animateIn ? 1 : 0)
         .scaleEffect(animateIn ? 1 : 0.8)
+        .disabled(mode == .conversational && !isNetworkAvailable)
+        .opacity(mode == .conversational && !isNetworkAvailable ? 0.7 : 1.0)
     }
     
     private var iconColor: Color {
@@ -261,141 +322,7 @@ struct ModeSelectionCard: View {
     }
 }
 
-// MARK: - Conversational Mode Preview
-
-struct ConversationalModePreview: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Hero image
-                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
-                    
-                    // Title
-                    Text("AI Conversation Mode")
-                        .font(.largeTitle)
-                        .bold()
-                    
-                    // Description
-                    Text("Experience a natural, engaging way to create your profile. Our AI assistant will guide you through a friendly conversation, making the onboarding process feel less like filling out forms and more like chatting with a helpful career counselor.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                    
-                    // Features
-                    VStack(alignment: .leading, spacing: 16) {
-                        FeatureRow(
-                            icon: "mic.fill",
-                            title: "Voice Support",
-                            description: "Speak naturally with voice input, or type your responses"
-                        )
-                        
-                        FeatureRow(
-                            icon: "brain",
-                            title: "Smart Understanding",
-                            description: "Our AI understands context and asks relevant follow-up questions"
-                        )
-                        
-                        FeatureRow(
-                            icon: "arrow.triangle.2.circlepath",
-                            title: "Flexible Flow",
-                            description: "Switch between conversation and forms anytime"
-                        )
-                        
-                        FeatureRow(
-                            icon: "checkmark.shield.fill",
-                            title: "Data Validation",
-                            description: "Automatic validation ensures accurate information"
-                        )
-                    }
-                    .padding(.vertical)
-                    
-                    // Sample conversation
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Example Conversation")
-                            .font(.headline)
-                        
-                        ChatBubblePreview(
-                            text: "Hi! I'm your MyPath assistant. What should I call you?",
-                            isUser: false
-                        )
-                        
-                        ChatBubblePreview(
-                            text: "I'm Sarah",
-                            isUser: true
-                        )
-                        
-                        ChatBubblePreview(
-                            text: "Nice to meet you, Sarah! Are you currently in school, working, or doing something else?",
-                            isUser: false
-                        )
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
 // MARK: - Supporting Views
-
-struct FeatureRow: View {
-    let icon: String
-    let title: String
-    let description: String
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.blue)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-    }
-}
-
-struct ChatBubblePreview: View {
-    let text: String
-    let isUser: Bool
-    
-    var body: some View {
-        HStack {
-            if isUser { Spacer(minLength: 60) }
-            
-            Text(text)
-                .padding(12)
-                .background(isUser ? Color.blue : Color.gray.opacity(0.2))
-                .foregroundColor(isUser ? .white : .primary)
-                .cornerRadius(16)
-            
-            if !isUser { Spacer(minLength: 60) }
-        }
-    }
-}
 
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -405,3 +332,34 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: - Loading Overlay
+//
+//struct LoadingOverlay: View {
+//    @State private var isAnimating = false
+//    
+//    var body: some View {
+//        ZStack {
+//            Color.black.opacity(0.4)
+//                .ignoresSafeArea()
+//            
+//            VStack(spacing: 20) {
+//                ProgressView()
+//                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+//                    .scaleEffect(1.5)
+//                
+//                Text("Starting...")
+//                    .font(.headline)
+//                    .foregroundColor(.white)
+//            }
+//            .padding(40)
+//            .background(Color.black.opacity(0.7))
+//            .cornerRadius(20)
+//            .scaleEffect(isAnimating ? 1.05 : 0.95)
+//            .onAppear {
+//                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+//                    isAnimating = true
+//                }
+//            }
+//        }
+//    }
+//}

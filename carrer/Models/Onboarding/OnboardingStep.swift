@@ -12,6 +12,7 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
     case favoriteSubjects
     case extracurriculars
     case careerInterests
+    case workValues              // Recipe C: Work Values assessment
     case loadingScreen
     case completionScreen
     
@@ -28,6 +29,7 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
             .favoriteSubjects,
             .extracurriculars,
             .careerInterests,
+            .workValues,
             .loadingScreen,
             .completionScreen
         ]
@@ -49,6 +51,7 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
              (.favoriteSubjects, .favoriteSubjects),
              (.extracurriculars, .extracurriculars),
              (.careerInterests, .careerInterests),
+             (.workValues, .workValues),
              (.loadingScreen, .loadingScreen),
              (.completionScreen, .completionScreen):
             return true

@@ -13,88 +13,88 @@ struct RIASECQuestionView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Removed duplicate header - already provided by OnboardingView
+        VStack(spacing: 16) {
+            // Description
+            Text("How much do you agree with each statement? This will help us understand your \(dimension.rawValue.lowercased()) interests.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Text("How much do you agree with each statement? This will help us understand your \(dimension.rawValue.lowercased()) interests.")
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, 20)
-            
-            ForEach(questions, id: \.self) { question in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(question)
-                        .font(.body)
-                        .padding(.bottom, 4)
-                    
-                    VStack(spacing: 12) {
-                        HStack(spacing: 0) {
-                            ForEach(1..<6) { rating in
-                                // Add a connecting line before each circle except the first one
-                                if rating > 1 {
-                                    // Line connecting the previous and current circle
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.3))
-                                        .frame(height: 2)
-                                        .padding(.horizontal, 5)
-                                }
-                                
-                                Button(action: {
-                                    responses[question] = rating
-                                    updateRIASECResponses()
-                                }) {
-                                    ZStack {
-                                        // Actual colored circle on top
-                                        Circle()
-                                            .fill(responses[question] == rating ? Color.blue : Color.gray.opacity(0.2))
-                                            .frame(width: 46, height: 46)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(Color.blue, lineWidth: responses[question] == rating ? 4 : 0)
-                                            )
-                                            .shadow(
-                                                color: responses[question] == rating ? Color.blue.opacity(0.3) : Color.clear,
-                                                radius: 4,
-                                                x: 0,
-                                                y: 2
-                                            )
-                                        
-                                        Text("\(rating)")
-                                            .foregroundColor(responses[question] == rating ? .white : .primary)
-                                            .font(.headline)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        
-                        HStack(spacing: 0) {
-                            Text("Strongly Disagree")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            Spacer()
-                            
-                            Text("Strongly Agree")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(questions, id: \.self) { question in
+                        questionCard(for: question)
                     }
-                    .padding(.bottom, 16)
                 }
+                .padding(.top, 4)
             }
-            }
-            .padding()
         }
         .onAppear {
             loadSavedResponses()
             print("RIASECQuestionView appeared for \(dimension.rawValue) dimension")
         }
-        // This modifier ensures the view is reconstructed when the dimension changes
-        // even if the struct type remains the same
         .id("riasec-\(dimension.rawValue)")
+    }
+
+    private func questionCard(for question: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(question)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .fixedSize(horizontal: false, vertical: true)
+
+
+            HStack(spacing: 0) {
+                ForEach(1..<6) { rating in
+                    if rating > 1 {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 2)
+                            .padding(.horizontal, 4)
+                    }
+
+                    Button(action: {
+                        responses[question] = rating
+                        updateRIASECResponses()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(responses[question] == rating ? AppColors.primary : Color.gray.opacity(0.15))
+                                .frame(width: 42, height: 42)
+                                .overlay(
+                                    Circle()
+                                        .stroke(AppColors.primary, lineWidth: responses[question] == rating ? 3 : 0)
+                                )
+                                .shadow(
+                                    color: responses[question] == rating ? AppColors.primary.opacity(0.3) : Color.clear,
+                                    radius: 3,
+                                    x: 0,
+                                    y: 2
+                                )
+
+                            Text("\(rating)")
+                                .foregroundColor(responses[question] == rating ? .white : .primary)
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+
+            HStack {
+                Text("Strongly Disagree")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("Strongly Agree")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(12)
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(12)
     }
     
     private func updateRIASECResponses() {

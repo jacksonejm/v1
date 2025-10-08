@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents the available onboarding modes
-enum OnboardingMode: String, CaseIterable {
+enum OnboardingMode: String, CaseIterable, Codable {
     case unselected = "unselected"
     case conversational = "conversational"
     case traditional = "traditional"

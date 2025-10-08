@@ -20,6 +20,7 @@ public enum UserDataKey: Hashable {
     case extracurricularOther
     case careerInterests
     case careerInterestsOther
+    case workValues              // Work Values scores (Recipe C)
     case careerSuggestions
     case questionBank
     case currentQuestionPage
