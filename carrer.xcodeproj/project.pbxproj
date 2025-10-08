@@ -14,6 +14,26 @@
 		A45176552DE2022500BB9752 /* OnboardingModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A45176542DE2022500BB9752 /* OnboardingModeManager.swift */; };
 		A45176572DE2024A00BB9752 /* OnboardingModeSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A45176562DE2024A00BB9752 /* OnboardingModeSelectionView.swift */; };
 		A462BB962DDF1F3D004FCB0E /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A462BB952DDF1F3D004FCB0E /* XCTest.framework */; platformFilter = ios; };
+		A46A40682DE2A16000D2F2A7 /* ConversationPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40672DE2A16000D2F2A7 /* ConversationPhase.swift */; };
+		A46A406A2DE2A17600D2F2A7 /* OnboardingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40692DE2A17600D2F2A7 /* OnboardingData.swift */; };
+		A46A406C2DE2A1DB00D2F2A7 /* ExtractedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A406B2DE2A1DB00D2F2A7 /* ExtractedData.swift */; };
+		A46A406E2DE2A20100D2F2A7 /* ConversationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A406D2DE2A20100D2F2A7 /* ConversationState.swift */; };
+		A46A40702DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A406F2DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift */; };
+		A46A40722DE2A26900D2F2A7 /* ConversationalDataExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40712DE2A26900D2F2A7 /* ConversationalDataExtractor.swift */; };
+		A46A40742DE2A27900D2F2A7 /* ContextualResponseGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40732DE2A27900D2F2A7 /* ContextualResponseGenerator.swift */; };
+		A46A40762DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40752DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift */; };
+		A46A40782DE2A2D000D2F2A7 /* LoadingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40772DE2A2D000D2F2A7 /* LoadingOverlay.swift */; };
+		A46A407A2DE2B48400D2F2A7 /* OnboardingDataBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40792DE2B48400D2F2A7 /* OnboardingDataBridge.swift */; };
+		A46A407C2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A407B2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift */; };
+		A46A407F2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */; };
+		A46A40822DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40802DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift */; };
+		A4AA47A22E95EAE90082C1B5 /* WorkValuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */; };
+		A4AA47A42E95EB700082C1B5 /* CareerSkill.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */; };
+		A4AA47A62E95EB8D0082C1B5 /* JobSearchStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */; };
+		A4AA47A82E95EBA80082C1B5 /* ONetOccupation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A72E95EBA80082C1B5 /* ONetOccupation.swift */; };
+		A4AA47AA2E95EBEB0082C1B5 /* SnowflakeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A92E95EBEB0082C1B5 /* SnowflakeService.swift */; };
+		A4AA47AE2E95ED600082C1B5 /* ONetCareerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47AD2E95ED600082C1B5 /* ONetCareerDetailView.swift */; };
+		A4AA47B02E95EECB0082C1B5 /* ONetCareerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47AF2E95EECB0082C1B5 /* ONetCareerViewModel.swift */; };
 		A4B520C22DDF1AFF00B71A54 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A4B520462DDF1AFF00B71A54 /* Assets.xcassets */; };
 		A4B520C32DDF1AFF00B71A54 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A4B520BD2DDF1AFF00B71A54 /* Media.xcassets */; };
 		A4B520C42DDF1AFF00B71A54 /* MyPath AI Coach - System Architecture Document.rtf in Resources */ = {isa = PBXBuildFile; fileRef = A4B520BE2DDF1AFF00B71A54 /* MyPath AI Coach - System Architecture Document.rtf */; };
@@ -154,6 +174,26 @@
 		A45176562DE2024A00BB9752 /* OnboardingModeSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingModeSelectionView.swift; sourceTree = "<group>"; };
 		A462BB942DDF1ECE004FCB0E /* StepFieldSpecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepFieldSpecTests.swift; sourceTree = "<group>"; };
 		A462BB952DDF1F3D004FCB0E /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		A46A40672DE2A16000D2F2A7 /* ConversationPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPhase.swift; sourceTree = "<group>"; };
+		A46A40692DE2A17600D2F2A7 /* OnboardingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingData.swift; sourceTree = "<group>"; };
+		A46A406B2DE2A1DB00D2F2A7 /* ExtractedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractedData.swift; sourceTree = "<group>"; };
+		A46A406D2DE2A20100D2F2A7 /* ConversationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationState.swift; sourceTree = "<group>"; };
+		A46A406F2DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationalOnboardingEngine.swift; sourceTree = "<group>"; };
+		A46A40712DE2A26900D2F2A7 /* ConversationalDataExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationalDataExtractor.swift; sourceTree = "<group>"; };
+		A46A40732DE2A27900D2F2A7 /* ContextualResponseGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextualResponseGenerator.swift; sourceTree = "<group>"; };
+		A46A40752DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationalOnboardingView.swift; sourceTree = "<group>"; };
+		A46A40772DE2A2D000D2F2A7 /* LoadingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingOverlay.swift; sourceTree = "<group>"; };
+		A46A40792DE2B48400D2F2A7 /* OnboardingDataBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDataBridge.swift; sourceTree = "<group>"; };
+		A46A407B2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiTurnConversationManager.swift; sourceTree = "<group>"; };
+		A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAnalytics.swift; sourceTree = "<group>"; };
+		A46A40802DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAnalyticsDashboard.swift; sourceTree = "<group>"; };
+		A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkValuesView.swift; sourceTree = "<group>"; };
+		A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerSkill.swift; sourceTree = "<group>"; };
+		A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobSearchStrategy.swift; sourceTree = "<group>"; };
+		A4AA47A72E95EBA80082C1B5 /* ONetOccupation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ONetOccupation.swift; sourceTree = "<group>"; };
+		A4AA47A92E95EBEB0082C1B5 /* SnowflakeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnowflakeService.swift; sourceTree = "<group>"; };
+		A4AA47AD2E95ED600082C1B5 /* ONetCareerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ONetCareerDetailView.swift; sourceTree = "<group>"; };
+		A4AA47AF2E95EECB0082C1B5 /* ONetCareerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ONetCareerViewModel.swift; sourceTree = "<group>"; };
 		A4B5202C2DDF1AFF00B71A54 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
 		A4B5202D2DDF1AFF00B71A54 /* Conversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conversation.swift; sourceTree = "<group>"; };
 		A4B5202E2DDF1AFF00B71A54 /* ResponseChunk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseChunk.swift; sourceTree = "<group>"; };
@@ -301,9 +341,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A46A407E2DE2C3DD00D2F2A7 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */,
+			);
+			name = Analytics;
+			path = carrer/Services/Analytics;
+			sourceTree = SOURCE_ROOT;
+		};
+		A46A40812DE2C41F00D2F2A7 /* Analytics */ = {
+			isa = PBXGroup;
+			children = (
+				A46A40802DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift */,
+			);
+			path = Analytics;
+			sourceTree = "<group>";
+		};
 		A4B5202F2DDF1AFF00B71A54 /* AIChat */ = {
 			isa = PBXGroup;
 			children = (
+				A46A406D2DE2A20100D2F2A7 /* ConversationState.swift */,
+				A46A406B2DE2A1DB00D2F2A7 /* ExtractedData.swift */,
 				A4B5202C2DDF1AFF00B71A54 /* ChatMessage.swift */,
 				A4B5202D2DDF1AFF00B71A54 /* Conversation.swift */,
 				A4B5202E2DDF1AFF00B71A54 /* ResponseChunk.swift */,
@@ -314,6 +373,9 @@
 		A4B520352DDF1AFF00B71A54 /* CareerExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				A4AA47A72E95EBA80082C1B5 /* ONetOccupation.swift */,
+				A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */,
+				A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */,
 				A4B520302DDF1AFF00B71A54 /* CareerTrack.swift */,
 				A4B520312DDF1AFF00B71A54 /* Job.swift */,
 				A4B520322DDF1AFF00B71A54 /* Milestone.swift */,
@@ -326,6 +388,8 @@
 		A4B5203A2DDF1AFF00B71A54 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				A46A40692DE2A17600D2F2A7 /* OnboardingData.swift */,
+				A46A40672DE2A16000D2F2A7 /* ConversationPhase.swift */,
 				A45176522DE201E500BB9752 /* OnboardingMode.swift */,
 				A4B520362DDF1AFF00B71A54 /* OnboardingStep.swift */,
 				A4B520372DDF1AFF00B71A54 /* RIASECDimension.swift */,
@@ -404,6 +468,7 @@
 			isa = PBXGroup;
 			children = (
 				A4B5204E2DDF1AFF00B71A54 /* APIConfig.swift */,
+				A4AA47A92E95EBEB0082C1B5 /* SnowflakeService.swift */,
 				A4B5204F2DDF1AFF00B71A54 /* NetworkMonitor.swift */,
 				A4B520502DDF1AFF00B71A54 /* SupabaseService.swift */,
 			);
@@ -432,6 +497,7 @@
 		A4B520592DDF1AFF00B71A54 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A46A407E2DE2C3DD00D2F2A7 /* Analytics */,
 				A4B5204D2DDF1AFF00B71A54 /* AI */,
 				A4B520512DDF1AFF00B71A54 /* Networking */,
 				A4B520532DDF1AFF00B71A54 /* Persistence */,
@@ -559,6 +625,9 @@
 		A4B520772DDF1AFF00B71A54 /* AIChat */ = {
 			isa = PBXGroup;
 			children = (
+				A46A407B2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift */,
+				A46A40732DE2A27900D2F2A7 /* ContextualResponseGenerator.swift */,
+				A46A40712DE2A26900D2F2A7 /* ConversationalDataExtractor.swift */,
 				A4B520752DDF1AFF00B71A54 /* AIAssistantViewModel.swift */,
 				A4B520762DDF1AFF00B71A54 /* ConversationStore.swift */,
 			);
@@ -576,6 +645,8 @@
 		A4B5207B2DDF1AFF00B71A54 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				A46A40792DE2B48400D2F2A7 /* OnboardingDataBridge.swift */,
+				A46A406F2DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift */,
 				A45176542DE2022500BB9752 /* OnboardingModeManager.swift */,
 				A4B5207A2DDF1AFF00B71A54 /* OnboardingStore.swift */,
 			);
@@ -616,6 +687,7 @@
 		A4B520932DDF1AFF00B71A54 /* CareerExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				A4AA47AD2E95ED600082C1B5 /* ONetCareerDetailView.swift */,
 				A4B520852DDF1AFF00B71A54 /* CareerLearningSection.swift */,
 				A4B520862DDF1AFF00B71A54 /* CareerReadinessView.swift */,
 				A4B520872DDF1AFF00B71A54 /* CareerTrackOverviewView.swift */,
@@ -637,6 +709,7 @@
 		A4B520A32DDF1AFF00B71A54 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A46A40772DE2A2D000D2F2A7 /* LoadingOverlay.swift */,
 				A4B520942DDF1AFF00B71A54 /* ActionCard.swift */,
 				A4B520952DDF1AFF00B71A54 /* CareerInterestPatternView.swift */,
 				A4B520962DDF1AFF00B71A54 /* CareerTrackCard.swift */,
@@ -659,6 +732,8 @@
 		A4B520B52DDF1AFF00B71A54 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */,
+				A46A40752DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift */,
 				A4B520A42DDF1AFF00B71A54 /* AccountCreationPromptView.swift */,
 				A4B520A52DDF1AFF00B71A54 /* CareerInterestsView.swift */,
 				A4B520A62DDF1AFF00B71A54 /* CompletionScreenView.swift */,
@@ -694,6 +769,7 @@
 		A4B520BA2DDF1AFF00B71A54 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A46A40812DE2C41F00D2F2A7 /* Analytics */,
 				A4B520842DDF1AFF00B71A54 /* AIChat */,
 				A4B520932DDF1AFF00B71A54 /* CareerExplorer */,
 				A4B520A32DDF1AFF00B71A54 /* Components */,
@@ -706,6 +782,7 @@
 		A4B520C02DDF1AFF00B71A54 /* carrer */ = {
 			isa = PBXGroup;
 			children = (
+				A4AA47AF2E95EECB0082C1B5 /* ONetCareerViewModel.swift */,
 				A4B5203E2DDF1AFF00B71A54 /* Models */,
 				A4B520452DDF1AFF00B71A54 /* New */,
 				A4B520482DDF1AFF00B71A54 /* Preview Content */,
@@ -919,6 +996,7 @@
 			files = (
 				A4B520C82DDF1AFF00B71A54 /* OnboardingTextStyle.swift in Sources */,
 				A4B520C92DDF1AFF00B71A54 /* LearningPathView.swift in Sources */,
+				A46A40822DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift in Sources */,
 				A4B520CA2DDF1AFF00B71A54 /* SocialSignInButton.swift in Sources */,
 				A4B520CB2DDF1AFF00B71A54 /* Updated_CareerRecommendation_Career_Development_Score.mlmodel in Sources */,
 				A4B520CC2DDF1AFF00B71A54 /* VoiceAssistantOverlay.swift in Sources */,
@@ -926,9 +1004,12 @@
 				A4B520CE2DDF1AFF00B71A54 /* FavoritesSectionView.swift in Sources */,
 				A45176532DE201E500BB9752 /* OnboardingMode.swift in Sources */,
 				A4B520CF2DDF1AFF00B71A54 /* ConversationModel.xcdatamodeld in Sources */,
+				A4AA47A82E95EBA80082C1B5 /* ONetOccupation.swift in Sources */,
 				A4B520D02DDF1AFF00B71A54 /* StudentLevelView.swift in Sources */,
 				A4B520D12DDF1AFF00B71A54 /* CareerTrack.swift in Sources */,
+				A46A407F2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift in Sources */,
 				A4B520D22DDF1AFF00B71A54 /* ConversationStore.swift in Sources */,
+				A46A406A2DE2A17600D2F2A7 /* OnboardingData.swift in Sources */,
 				A4B520D32DDF1AFF00B71A54 /* FavoriteSubjectsView.swift in Sources */,
 				A4B520D42DDF1AFF00B71A54 /* CareerTrackOverviewView.swift in Sources */,
 				A4B520D52DDF1AFF00B71A54 /* SelectionOption.swift in Sources */,
@@ -951,14 +1032,17 @@
 				A4B520E62DDF1AFF00B71A54 /* InterestCircle.swift in Sources */,
 				A4B520E72DDF1AFF00B71A54 /* Updated_CareerRecommendation_Technical_Expertise_Score.mlmodel in Sources */,
 				A45176552DE2022500BB9752 /* OnboardingModeManager.swift in Sources */,
+				A46A40762DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift in Sources */,
 				A4B520E82DDF1AFF00B71A54 /* Spacing.swift in Sources */,
 				A4B520E92DDF1AFF00B71A54 /* ChatMessage.swift in Sources */,
 				A4B520EA2DDF1AFF00B71A54 /* CareerReadinessView.swift in Sources */,
 				A4B520EB2DDF1AFF00B71A54 /* StepFieldSpec.swift in Sources */,
+				A46A40742DE2A27900D2F2A7 /* ContextualResponseGenerator.swift in Sources */,
 				A4B520EC2DDF1AFF00B71A54 /* GetNameView.swift in Sources */,
 				A4B520ED2DDF1AFF00B71A54 /* RIASECQuestion.swift in Sources */,
 				A4B520EE2DDF1AFF00B71A54 /* UpdateFieldTool.swift in Sources */,
 				A4B520EF2DDF1AFF00B71A54 /* MyPathApp.swift in Sources */,
+				A4AA47AA2E95EBEB0082C1B5 /* SnowflakeService.swift in Sources */,
 				A4B520F02DDF1AFF00B71A54 /* ResourcesSection.swift in Sources */,
 				A4B520F12DDF1AFF00B71A54 /* OnboardingDTO.swift in Sources */,
 				A4B520F22DDF1AFF00B71A54 /* HeaderSection.swift in Sources */,
@@ -966,9 +1050,13 @@
 				A4B520F42DDF1AFF00B71A54 /* ExtracurricularActivitiesView.swift in Sources */,
 				A4B520F52DDF1AFF00B71A54 /* CurrentStatusView.swift in Sources */,
 				A4B520F62DDF1AFF00B71A54 /* JobMatchCard.swift in Sources */,
+				A46A40682DE2A16000D2F2A7 /* ConversationPhase.swift in Sources */,
+				A46A40782DE2A2D000D2F2A7 /* LoadingOverlay.swift in Sources */,
 				A4B520F72DDF1AFF00B71A54 /* OnboardingSecondaryTextStyle.swift in Sources */,
+				A46A407A2DE2B48400D2F2A7 /* OnboardingDataBridge.swift in Sources */,
 				A4B520F82DDF1AFF00B71A54 /* AppCoordinator.swift in Sources */,
 				A4B520F92DDF1AFF00B71A54 /* Collection+SafeSubscript.swift in Sources */,
+				A46A406E2DE2A20100D2F2A7 /* ConversationState.swift in Sources */,
 				A4B520FA2DDF1AFF00B71A54 /* PersistenceController.swift in Sources */,
 				A4B520FB2DDF1AFF00B71A54 /* ResourceCard.swift in Sources */,
 				A4B520FC2DDF1AFF00B71A54 /* MilestoneCard.swift in Sources */,
@@ -976,6 +1064,8 @@
 				A4B520FE2DDF1AFF00B71A54 /* UserDataKey.swift in Sources */,
 				A4B520FF2DDF1AFF00B71A54 /* NextStepItem.swift in Sources */,
 				A4B521002DDF1AFF00B71A54 /* OnboardingStoreKey.swift in Sources */,
+				A46A40722DE2A26900D2F2A7 /* ConversationalDataExtractor.swift in Sources */,
+				A4AA47A22E95EAE90082C1B5 /* WorkValuesView.swift in Sources */,
 				A4B521012DDF1AFF00B71A54 /* SupabaseService.swift in Sources */,
 				A4B521022DDF1AFF00B71A54 /* ToolRegistry.swift in Sources */,
 				A4B521032DDF1AFF00B71A54 /* Updated_CareerRecommendation_Job_Complexity_Score.mlmodel in Sources */,
@@ -986,7 +1076,9 @@
 				A4B521082DDF1AFF00B71A54 /* CompletionScreenView.swift in Sources */,
 				A4B521092DDF1AFF00B71A54 /* SecureOnboardingCleanupTask.swift in Sources */,
 				A4B5210A2DDF1AFF00B71A54 /* AppViewModel.swift in Sources */,
+				A4AA47A62E95EB8D0082C1B5 /* JobSearchStrategy.swift in Sources */,
 				A4B5210B2DDF1AFF00B71A54 /* WelcomeMessageView.swift in Sources */,
+				A4AA47B02E95EECB0082C1B5 /* ONetCareerViewModel.swift in Sources */,
 				A4B5210C2DDF1AFF00B71A54 /* OnboardingStep.swift in Sources */,
 				A4B5210D2DDF1AFF00B71A54 /* SecureOnboardingStore.swift in Sources */,
 				A4B5210E2DDF1AFF00B71A54 /* Updated_CareerRecommendation_Social_Interaction_Score.mlmodel in Sources */,
@@ -997,8 +1089,10 @@
 				A4B521132DDF1AFF00B71A54 /* ToolError.swift in Sources */,
 				A4B521142DDF1AFF00B71A54 /* RecommendedNextStepsView.swift in Sources */,
 				A4B521152DDF1AFF00B71A54 /* MotivationalMessageView.swift in Sources */,
+				A46A407C2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift in Sources */,
 				A4B521162DDF1AFF00B71A54 /* JobDetailView.swift in Sources */,
 				A4B521172DDF1AFF00B71A54 /* Job.swift in Sources */,
+				A46A40702DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift in Sources */,
 				A4B521182DDF1AFF00B71A54 /* TimelineItem.swift in Sources */,
 				A4B521192DDF1AFF00B71A54 /* Updated_CareerRecommendation_Physical_Demands_Score.mlmodel in Sources */,
 				A4B5211A2DDF1AFF00B71A54 /* ResponseChunk.swift in Sources */,
@@ -1010,13 +1104,16 @@
 				A4B521202DDF1AFF00B71A54 /* SplashScreen.swift in Sources */,
 				A4B521212DDF1AFF00B71A54 /* ContentView.swift in Sources */,
 				A4B521222DDF1AFF00B71A54 /* Conversation.swift in Sources */,
+				A4AA47A42E95EB700082C1B5 /* CareerSkill.swift in Sources */,
 				A4B521232DDF1AFF00B71A54 /* OpenAIService.swift in Sources */,
 				A4B521242DDF1AFF00B71A54 /* LoadingScreenView.swift in Sources */,
 				A4B521252DDF1AFF00B71A54 /* NetworkMonitor.swift in Sources */,
 				A4B521262DDF1AFF00B71A54 /* WelcomeView.swift in Sources */,
+				A4AA47AE2E95ED600082C1B5 /* ONetCareerDetailView.swift in Sources */,
 				A45176572DE2024A00BB9752 /* OnboardingModeSelectionView.swift in Sources */,
 				A4B521272DDF1AFF00B71A54 /* ActionCard.swift in Sources */,
 				A4B521282DDF1AFF00B71A54 /* LoginView.swift in Sources */,
+				A46A406C2DE2A1DB00D2F2A7 /* ExtractedData.swift in Sources */,
 				A4B521292DDF1AFF00B71A54 /* OnboardingStore.swift in Sources */,
 				A4B5212A2DDF1AFF00B71A54 /* RecommendedCareersSection.swift in Sources */,
 				A4B5212B2DDF1AFF00B71A54 /* AccountCreationPromptView.swift in Sources */,

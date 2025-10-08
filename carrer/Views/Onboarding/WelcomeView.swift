@@ -51,7 +51,10 @@ struct WelcomeView: View {
             VStack(spacing: 16) {
                 // Get Started button
                 Button(action: {
-                    viewModel.navigateTo(.onboardingModeSelection)
+                    // Delay navigation slightly to avoid SwiftUI update cycle issues
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        viewModel.navigateTo(.onboardingModeSelection)
+                    }
                 }) {
                     HStack {
                         Spacer()

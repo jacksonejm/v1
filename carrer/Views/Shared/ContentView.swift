@@ -14,7 +14,9 @@ struct ContentView: View {
                     case .initial:
                         WelcomeView(viewModel: viewModel)
                     case .onboardingModeSelection:
-                        OnboardingModeSelectionView(viewModel: viewModel, onboardingStore: onboardingStore)
+                        OnboardingModeSelectionView()
+                            .environmentObject(viewModel)
+                            .environmentObject(onboardingStore)
                     case .onboarding(let step):
                         OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
                             .environmentObject(onboardingStore)
@@ -23,10 +25,9 @@ struct ContentView: View {
                         OnboardingView(viewModel: viewModel, step: step, onboardingStore: onboardingStore)
                             .environmentObject(onboardingStore)
                     case .conversationalOnboarding:
-                        // Placeholder for conversational onboarding view (to be implemented in Week 2)
-                        Text("Conversational Onboarding Coming Soon")
-                            .font(.largeTitle)
-                            .padding()
+                        ConversationalOnboardingView(onboardingStore: onboardingStore)
+                            .environmentObject(viewModel)
+                            .environmentObject(onboardingStore)
                     case .login:
                         LoginView(viewModel: viewModel)
                     case .dashboard:

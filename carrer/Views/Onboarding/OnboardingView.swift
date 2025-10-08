@@ -190,6 +190,25 @@ struct OnboardingView: View {
         print("AI Assistant invoked for step: \(getStepName(step))")
     }
     
+    // Switch to conversational onboarding
+    private func switchToConversation() {
+        // Create and initialize mode manager if needed
+        if viewModel.onboardingModeManager == nil {
+            viewModel.onboardingModeManager = OnboardingModeManager(onboardingStore: onboardingStore)
+        }
+        
+        // Use switchMode to properly track the transition
+        Task {
+            await viewModel.onboardingModeManager?.switchMode(to: .conversational, preserveData: true)
+            
+            // Navigate to conversational onboarding
+            await MainActor.run {
+                viewModel.appFlowState = .conversationalOnboarding
+            }
+        }
+        // data when it initializes and call the data bridge to sync
+    }
+    
     // Helper to get the step name for analytics
     private func getStepName(_ step: OnboardingStep) -> String {
         switch step {
@@ -215,6 +234,8 @@ struct OnboardingView: View {
             return "activities"
         case .careerInterests:
             return "careers"
+        case .workValues:
+            return "values"
         case .loadingScreen:
             return "loading"
         case .completionScreen:
@@ -228,6 +249,19 @@ struct OnboardingView: View {
                 .frame(width: 32, height: 32)
             
             ProgressBar(currentStep: determineCurrentStep(for: step), totalSteps: 18)
+            
+            Spacer()
+            
+            // Switch to conversation button
+            Menu {
+                Button(action: { switchToConversation() }) {
+                    Label("Switch to AI Chat", systemImage: "bubble.left.and.bubble.right")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(.blue)
+            }
         }
         .padding(.top)
     }
@@ -297,7 +331,7 @@ struct OnboardingView: View {
             }
             return true
             
-        case .extracurriculars, .careerInterests:
+        case .extracurriculars, .careerInterests, .workValues:
             return false
             
         default:
@@ -358,6 +392,8 @@ struct OnboardingView: View {
             return "What Activities Do You Enjoy Outside of School?"
         case .careerInterests:
             return "What Careers Interest You the Most?"
+        case .workValues:
+            return "What Matters Most to You?"
         case .loadingScreen:
             return ""
         case .completionScreen:
@@ -390,6 +426,8 @@ struct OnboardingView: View {
             ExtracurricularActivitiesView(viewModel: viewModel)
         case .careerInterests:
             CareerInterestsView(viewModel: viewModel)
+        case .workValues:
+            WorkValuesView(viewModel: viewModel)
         case .loadingScreen:
             LoadingScreenView(viewModel: viewModel)
         case .completionScreen:
@@ -411,8 +449,9 @@ struct OnboardingView: View {
         case .favoriteSubjects: return 14
         case .extracurriculars: return 15
         case .careerInterests: return 16
-        case .loadingScreen: return 17
-        case .completionScreen: return 18
+        case .workValues: return 17
+        case .loadingScreen: return 18
+        case .completionScreen: return 19
         }
     }
     
@@ -1494,6 +1533,8 @@ struct HelpSheetView: View {
             return "About Activities"
         case .careerInterests:
             return "About Career Interests"
+        case .workValues:
+            return "About Work Values"
         default:
             return "Help & Information"
         }
@@ -1517,6 +1558,8 @@ struct HelpSheetView: View {
             return "Activities outside of school or work reveal additional skills and interests that can inform your career path recommendations."
         case .careerInterests:
             return "Sharing careers you're already interested in helps us refine our recommendations and provide relevant information about those fields."
+        case .workValues:
+            return "Work values represent what's most important to you in a career beyond just interests. Understanding your values helps us recommend careers that will not only match your skills and interests, but also provide the kind of work environment and rewards that matter most to you."
         default:
             return "This section helps us understand your preferences better. The more information you provide, the more personalized your career recommendations will be."
         }
@@ -1541,6 +1584,12 @@ struct HelpSheetView: View {
                 "Include careers you're curious about, even if you're not sure yet",
                 "Don't limit yourself based on your current qualifications",
                 "Think broadly about industries and roles that appeal to you"
+            ]
+        case .workValues:
+            return [
+                "Be honest about what matters to you, not what you think you should value",
+                "Consider what would make you excited to go to work each day",
+                "Think about what frustrated you in past jobs or activities"
             ]
         default:
             return nil

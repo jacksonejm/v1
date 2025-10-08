@@ -24,4 +24,38 @@ struct APIConfig {
     static var supabaseKey: String? {
         return value(for: "SUPABASE_KEY")
     }
+
+    // MARK: - Snowflake Configuration
+
+    static var snowflakeAccount: String? {
+        return value(for: "SNOWFLAKE_ACCOUNT")
+    }
+
+    static var snowflakeUsername: String? {
+        return value(for: "SNOWFLAKE_USERNAME")
+    }
+
+    static var snowflakePassword: String? {
+        return value(for: "SNOWFLAKE_PASSWORD")
+    }
+
+    static var snowflakeWarehouse: String? {
+        return value(for: "SNOWFLAKE_WAREHOUSE")
+    }
+
+    static var snowflakeDatabase: String? {
+        return value(for: "SNOWFLAKE_DATABASE")
+    }
+
+    static var snowflakeSchema: String? {
+        return value(for: "SNOWFLAKE_SCHEMA")
+    }
+
+    static var snowflakePrivateKey: String? {
+        return value(for: "SNOWFLAKE_PRIVATE_KEY")
+    }
+
+    static var snowflakePublicKeyFingerprint: String? {
+        return value(for: "SNOWFLAKE_PUBLIC_KEY_FINGERPRINT")
+    }
 }

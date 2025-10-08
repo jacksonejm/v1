@@ -82,10 +82,7 @@ class AppViewModel: ObservableObject {
         case .extracurriculars:
             nextStep = .careerInterests
         case .careerInterests:
-            // Transition to work values assessment (Recipe C v3.0)
-            nextStep = .workValues
-        case .workValues:
-            // After work values, transition to loading screen for processing
+            // Transition to the loading screen for processing responses
             nextStep = .loadingScreen
         case .loadingScreen:
             // After processing, move to completion
@@ -182,7 +179,6 @@ class AppViewModel: ObservableObject {
             .extracurricularOther,
             .careerInterests,
             .careerInterestsOther,
-            .workValues,
             .riasecResults
         ]
         
@@ -385,12 +381,9 @@ class AppViewModel: ObservableObject {
             
         case .careerInterests:
             return .extracurriculars
-
-        case .workValues:
-            return .careerInterests
-
+            
         case .loadingScreen:
-            return .workValues
+            return .careerInterests
             
         case .completionScreen:
             return .loadingScreen
@@ -481,7 +474,6 @@ class AppViewModel: ObservableObject {
         case .favoriteSubjects: return "Favorite Subjects"
         case .extracurriculars: return "Extracurricular Activities"
         case .careerInterests: return "Career Interests"
-        case .workValues: return "Work Values"
         case .loadingScreen: return "Loading Screen"
         case .completionScreen: return "Completion Screen"
         }
@@ -518,32 +510,9 @@ class AppViewModel: ObservableObject {
                 print("  \(dimension): \(String(format: "%.2f", score))")
             }
 
-            // Extract work values from userData (Recipe C v3.0)
-            var workValuesDict: [String: Float]? = nil
-            if let workValuesData = userData[.workValues] as? [String: Double] {
-                workValuesDict = [
-                    "achievement": Float(workValuesData["achievement"] ?? 3.0),
-                    "independence": Float(workValuesData["independence"] ?? 3.0),
-                    "recognition": Float(workValuesData["recognition"] ?? 3.0),
-                    "relationships": Float(workValuesData["relationships"] ?? 3.0),
-                    "support": Float(workValuesData["support"] ?? 3.0),
-                    "working_conditions": Float(workValuesData["working_conditions"] ?? 3.0)
-                ]
-
-                print("📊 Work Values extracted (Recipe C v3.0):")
-                for (value, score) in workValuesDict!.sorted(by: { $0.key < $1.key }) {
-                    print("  \(value): \(String(format: "%.2f", score))")
-                }
-            } else {
-                print("ℹ️ No work values provided, using defaults (3.0 = moderate importance)")
-            }
-
-            // Fetch career matches from Snowflake O*NET (v3.0 with work values)
+            // Fetch career matches from Snowflake O*NET
             let snowflakeService = SnowflakeService.shared
-            let onetOccupations = try await snowflakeService.getCareerMatches(
-                scores: riasecScores,
-                workValues: workValuesDict
-            )
+            let onetOccupations = try await snowflakeService.getCareerMatches(scores: riasecScores)
 
             print("✅ Received \(onetOccupations.count) O*NET career matches")
 

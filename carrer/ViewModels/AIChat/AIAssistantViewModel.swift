@@ -151,6 +151,8 @@ class AIAssistantViewModel: ObservableObject {
             return "activities"
         case .careerInterests:
             return "careers"
+        case .workValues:
+            return "workValues"
         case .loadingScreen:
             return "loading"
         case .completionScreen:
@@ -193,10 +195,13 @@ class AIAssistantViewModel: ObservableObject {
             
         case .careerInterests:
             return "What careers interest you most? I can help you explore options and understand different paths."
-            
+
+        case .workValues:
+            return "Work values help us understand what matters most to you in a career. Need help rating what's important to you?"
+
         case .loadingScreen:
             return "I'm here while your profile is being processed. Do you have any questions about what happens next?"
-            
+
         case .completionScreen:
             return "Congratulations on completing your profile! I can help you understand your results or next steps."
         }

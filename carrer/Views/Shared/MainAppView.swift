@@ -3,7 +3,8 @@ import SwiftUI
 struct MainAppView: View {
     @ObservedObject var viewModel: AppViewModel
     @State private var selectedTab = 0
-    
+    @State private var showMatchPercentageInfo = false
+
     var body: some View {
         TabView(selection: $selectedTab) {
             // Dashboard tab
@@ -57,13 +58,13 @@ struct MainAppView: View {
                 VStack(spacing: 20) {
                     // Header section
                     headerSection
-                    
+
                     // Career tracks section
                     careerTracksSection
-                    
+
                     // Recommended careers section
                     recommendedCareersSection
-                    
+
                     // Learning resources section
                     learningResourcesSection
                 }
@@ -71,6 +72,89 @@ struct MainAppView: View {
             }
             .navigationTitle("My Career Path")
             .navigationBarTitleDisplayMode(.large)
+            .sheet(isPresented: $showMatchPercentageInfo) {
+                matchPercentageInfoSheet
+            }
+        }
+    }
+
+    private var matchPercentageInfoSheet: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Understanding Your Match %")
+                        .font(.title2)
+                        .fontWeight(.bold)
+
+                    Text("Your match percentage shows how well a career aligns with your interests.")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 16) {
+                    matchInfoBullet(
+                        icon: "chart.bar.fill",
+                        title: "Based on Your Top Interests",
+                        description: "We compare careers to your strongest interest areas (like Social, Artistic, etc.)"
+                    )
+
+                    matchInfoBullet(
+                        icon: "sparkles",
+                        title: "Higher = Better Fit",
+                        description: "90%+ means this career strongly matches your interests. 70-89% is a good match. Below 70% may not align well."
+                    )
+
+                    matchInfoBullet(
+                        icon: "graduationcap.fill",
+                        title: "Real Career Data",
+                        description: "Powered by O*NET, the most comprehensive database of occupational information."
+                    )
+                }
+                .padding(.top, 8)
+
+                Spacer()
+
+                Button(action: {
+                    showMatchPercentageInfo = false
+                }) {
+                    Text("Got it!")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(AppColors.primary)
+                        .cornerRadius(12)
+                }
+            }
+            .padding(24)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        showMatchPercentageInfo = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func matchInfoBullet(icon: String, title: String, description: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(AppColors.primary)
+                .frame(width: 32)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
     
@@ -119,6 +203,12 @@ struct MainAppView: View {
                     Text("About MyPath")
                     Text("Help & support")
                     Text("Privacy policy")
+                    
+                    #if DEBUG
+                    NavigationLink(destination: ConversationAnalyticsDashboard()) {
+                        Text("Conversation Analytics")
+                    }
+                    #endif
                     
                     Button(action: {
                         // Sign out logic
@@ -227,75 +317,82 @@ struct MainAppView: View {
     }
     
     private func careerTrackCard(_ track: CareerTrack) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(track.title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                
-                Text("Progress: \(track.progress)%")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 6)
-                        .cornerRadius(3)
-                    
-                    Rectangle()
-                        .fill(AppColors.primary)
-                        .frame(width: geometry.size.width * CGFloat(track.progress) / 100, height: 6)
-                        .cornerRadius(3)
+        NavigationLink(destination: ONetCareerDetailView(careerTrack: track)) {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(track.title)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .lineLimit(2)
+
+                        Spacer()
+
+                        // O*NET badge if available
+                        if track.hasONetData {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.caption)
+                                .foregroundColor(AppColors.primary)
+                        }
+                    }
+
+                    if let riasecMatch = track.riasecMatch {
+                        Text(riasecMatch)
+                            .font(.caption)
+                            .foregroundColor(AppColors.primary)
+                    } else {
+                        Text("Progress: \(track.progress)%")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
-            }
-            .frame(height: 6)
-            
-            HStack(spacing: 12) {
-                // Salary
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Salary")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text(track.salary)
+
+                // Progress bar (only show if no O*NET data)
+                if !track.hasONetData {
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 6)
+                                .cornerRadius(3)
+
+                            Rectangle()
+                                .fill(AppColors.primary)
+                                .frame(width: geometry.size.width * CGFloat(track.progress) / 100, height: 6)
+                                .cornerRadius(3)
+                        }
+                    }
+                    .frame(height: 6)
+                }
+
+                HStack(spacing: 12) {
+                    // Match percentage (larger for O*NET)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Match")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+
+                        Text("\(track.match)%")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(AppColors.primary)
+                    }
+
+                    Spacer()
+
+                    // Tap indicator
+                    Image(systemName: "chevron.right")
                         .font(.caption)
-                        .fontWeight(.medium)
-                }
-                
-                // Education
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Education")
-                        .font(.caption2)
                         .foregroundColor(.secondary)
-                    
-                    Text(track.education)
-                        .font(.caption)
-                        .fontWeight(.medium)
                 }
-                
-                // Match
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Match")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("\(track.match)%")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(AppColors.primary)
-                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .frame(width: 240)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(12)
         }
-        .padding()
-        .frame(width: 240)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func careerTrackEmptyCard() -> some View {
@@ -325,42 +422,77 @@ struct MainAppView: View {
                 Text("Recommended For You")
                     .font(.title3)
                     .fontWeight(.bold)
-                
+
+                Button(action: {
+                    showMatchPercentageInfo = true
+                }) {
+                    Image(systemName: "info.circle")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
                 Spacer()
-                
+
                 Button(action: {}) {
                     Text("See All")
                         .font(.subheadline)
                         .foregroundColor(AppColors.primary)
                 }
             }
-            
-            // Recommended careers list
+
+            // Recommended careers list - show O*NET careers from Snowflake
             VStack(spacing: 12) {
-                ForEach(1...3, id: \.self) { index in
-                    recommendedCareerRow(
-                        title: ["Software Engineer", "UX Designer", "Data Scientist"][index - 1],
-                        match: [95, 87, 82][index - 1]
-                    )
+                ForEach(Array(viewModel.careerTracks.prefix(3))) { track in
+                    NavigationLink(destination: ONetCareerDetailView(careerTrack: track)) {
+                        recommendedCareerRow(track: track)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+
+                // Fallback to empty state if no careers
+                if viewModel.careerTracks.isEmpty {
+                    Text("Complete your profile to get personalized recommendations")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(12)
                 }
             }
         }
     }
-    
-    private func recommendedCareerRow(title: String, match: Int) -> some View {
+
+    private func recommendedCareerRow(track: CareerTrack) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                
-                Text("Based on your interests and skills")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack {
+                    Text(track.title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    // O*NET badge
+                    if track.hasONetData {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.caption)
+                            .foregroundColor(AppColors.primary)
+                    }
+                }
+
+                if let riasecMatch = track.riasecMatch {
+                    Text(riasecMatch)
+                        .font(.caption)
+                        .foregroundColor(AppColors.primary)
+                } else {
+                    Text("Based on your interests and skills")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
-            
+
             Spacer()
-            
-            Text("\(match)%")
+
+            Text("\(track.match)%")
                 .font(.headline)
                 .foregroundColor(AppColors.primary)
                 .padding(8)

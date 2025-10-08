@@ -475,6 +475,7 @@ class OnboardingStore: ObservableObject {
         case .favoriteSubjects: return "favoriteSubjects"
         case .extracurriculars: return "extracurriculars"
         case .careerInterests: return "careerInterests"
+        case .workValues: return "workValues"
         case .loadingScreen: return "loadingScreen"
         case .completionScreen: return "completionScreen"
         }
@@ -499,6 +500,7 @@ class OnboardingStore: ObservableObject {
         case "favoriteSubjects": return .favoriteSubjects
         case "extracurriculars": return .extracurriculars
         case "careerInterests": return .careerInterests
+        case "workValues": return .workValues
         case "loadingScreen": return .loadingScreen
         case "completionScreen": return .completionScreen
         default: return nil
@@ -582,6 +584,8 @@ class OnboardingStore: ObservableObject {
         case .extracurriculars:
             return .careerInterests
         case .careerInterests:
+            return .workValues
+        case .workValues:
             return .loadingScreen
         case .loadingScreen:
             return .completionScreen
@@ -627,8 +631,10 @@ class OnboardingStore: ObservableObject {
             return .favoriteSubjects
         case .careerInterests:
             return .extracurriculars
-        case .loadingScreen:
+        case .workValues:
             return .careerInterests
+        case .loadingScreen:
+            return .workValues
         case .completionScreen:
             return .loadingScreen
         }

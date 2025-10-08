@@ -12,6 +12,7 @@ class OnboardingModeManager: ObservableObject {
     // MARK: - Private Properties
     private let onboardingStore: OnboardingStore
     private var cancellables = Set<AnyCancellable>()
+    private(set) var previousMode: OnboardingMode?
     
     // MARK: - Computed Properties
     var canSwitchModes: Bool {
@@ -34,6 +35,8 @@ class OnboardingModeManager: ObservableObject {
     /// Select and start the specified onboarding mode
     func selectMode(_ mode: OnboardingMode) {
         guard mode != .unselected else { return }
+        
+        previousMode = currentMode
         
         withAnimation(.easeInOut(duration: 0.3)) {
             currentMode = mode
@@ -58,6 +61,8 @@ class OnboardingModeManager: ObservableObject {
             await saveCurrentProgress()
         }
         
+        previousMode = currentMode
+        
         withAnimation(.easeInOut(duration: 0.3)) {
             currentMode = newMode
         }
@@ -68,7 +73,7 @@ class OnboardingModeManager: ObservableObject {
         isTransitioning = false
         
         // Log analytics
-        logModeSwitch(from: currentMode, to: newMode)
+        logModeSwitch(from: previousMode ?? .unselected, to: newMode)
     }
     
     /// Reset to mode selection
