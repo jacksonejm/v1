@@ -1,0 +1,38 @@
+USE DATABASE ONET_CAREER_DB;
+USE SCHEMA CAREER_SCHEMA;
+
+-- Show ALL skills for Software Developers
+SELECT 'All skills for Software Developers (15-1252.00):' AS INFO;
+SELECT
+    ELEMENT_ID,
+    ELEMENT_NAME,
+    SCALE_ID,
+    DATA_VALUE
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE = '15-1252.00'
+ORDER BY SCALE_ID, DATA_VALUE DESC;
+
+-- Count how many skills they have
+SELECT 'Total skills for Software Developers by SCALE_ID:' AS INFO;
+SELECT
+    SCALE_ID,
+    COUNT(*) AS NUM_SKILLS
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE = '15-1252.00'
+GROUP BY SCALE_ID;
+
+-- Show what scales exist
+SELECT 'All unique SCALE_IDs in SKILLS_FACT:' AS INFO;
+SELECT DISTINCT SCALE_ID
+FROM SKILLS_FACT
+ORDER BY SCALE_ID;
+
+-- Check if Programming exists for ANY career
+SELECT 'Does Element ID 2.B.3.e exist for ANY career?' AS INFO;
+SELECT DISTINCT
+    ONET_SOC_CODE,
+    ELEMENT_NAME,
+    SCALE_ID
+FROM SKILLS_FACT
+WHERE ELEMENT_ID = '2.B.3.e'
+LIMIT 10;

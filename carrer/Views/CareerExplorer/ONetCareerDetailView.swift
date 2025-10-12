@@ -4,14 +4,25 @@ import SwiftUI
 /// Shows skills, technologies, job search links, and full description
 struct ONetCareerDetailView: View {
     let careerTrack: CareerTrack
+    let isTopMatch: Bool
+    @ObservedObject var tracksViewModel: CareerTracksViewModel
     @StateObject private var viewModel = ONetCareerViewModel()
     @Environment(\.dismiss) private var dismiss
+    @State private var showMatchBreakdown = false
+    @State private var showAddToTrack = false
+
+    private var isAlreadyTracked: Bool {
+        tracksViewModel.isTracked(careerId: careerTrack.id)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 // Header Section
                 headerSection
+
+                // Add to Track CTA
+                addToTrackButton
 
                 // Match Information
                 if let riasecMatch = careerTrack.riasecMatch {
@@ -54,6 +65,24 @@ struct ONetCareerDetailView: View {
         }
         .navigationTitle(careerTrack.title)
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showMatchBreakdown) {
+            MatchBreakdownView(careerTrack: careerTrack)
+        }
+        .sheet(isPresented: $showAddToTrack) {
+            AddToTrackSheet(
+                career: careerTrack,
+                isTopMatch: isTopMatch,
+                onConfirm: {
+                    do {
+                        _ = try tracksViewModel.addTrack(career: careerTrack)
+                        showAddToTrack = false
+                    } catch {
+                        // Handle error (track limit reached or already tracked)
+                        print("Error adding track: \(error.localizedDescription)")
+                    }
+                }
+            )
+        }
         .task {
             // Load career details when view appears
             if let onetCode = careerTrack.onetCode {
@@ -65,29 +94,136 @@ struct ONetCareerDetailView: View {
 
     // MARK: - View Components
 
+    private var addToTrackButton: some View {
+        Group {
+            if isAlreadyTracked {
+                // Already tracking - show status and link to track detail
+                if let track = tracksViewModel.getTrack(careerId: careerTrack.id) {
+                    NavigationLink(destination: TrackDetailView(
+                        track: track,
+                        isTopMatch: isTopMatch,
+                        tracksViewModel: tracksViewModel
+                    )) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(.green)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Currently Tracking")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+
+                                Text("Tap to view your progress")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "arrow.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.green.opacity(0.3), lineWidth: 1.5)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else {
+                // Not tracking yet - show Add to Track CTA
+                Button(action: {
+                    showAddToTrack = true
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Add to Track")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+
+                            Text("Start planning your path to this career")
+                                .font(.caption)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "arrow.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(AppColors.primary)
+                    .cornerRadius(12)
+                }
+            }
+        }
+    }
+
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(careerTrack.title)
-                    .font(.title)
-                    .fontWeight(.bold)
+            Text(careerTrack.title)
+                .font(.title)
+                .fontWeight(.bold)
 
-                Spacer()
+            // Badges row
+            HStack(spacing: 8) {
+                // Show top match badge if in top 3, otherwise show match tier
+                if isTopMatch {
+                    TopMatchBadge(size: .medium)
+                } else {
+                    MatchPill(tier: careerTrack.matchTier, size: .medium)
+                }
 
-                Text("\(careerTrack.match)%")
-                    .font(.title2)
-                    .fontWeight(.bold)
+                if careerTrack.isBoosted {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.caption)
+                        Text("Boosted")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
                     .foregroundColor(AppColors.primary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(AppColors.primary.opacity(0.1))
-                    .cornerRadius(12)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(AppColors.primary.opacity(0.15))
+                    .cornerRadius(999)
+                }
             }
 
             if let onetCode = careerTrack.onetCode {
                 Text("O*NET Code: \(onetCode)")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+
+            // "Why this match?" button - shows numeric breakdown
+            Button(action: {
+                showMatchBreakdown = true
+            }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "questionmark.circle")
+                        .font(.caption)
+                    Text("Why this match?")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    Text("See breakdown")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .foregroundColor(AppColors.primary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(AppColors.primary.opacity(0.1))
+                .cornerRadius(8)
             }
         }
     }
@@ -331,7 +467,9 @@ struct JobBoardButton: View {
                 onetDescription: "Research, design, and develop computer and network software or specialized utility programs. Analyze user needs and develop software solutions, applying principles and techniques of computer science, engineering, and mathematical analysis.",
                 primaryRIASEC: "Investigative",
                 secondaryRIASEC: "Conventional"
-            )
+            ),
+            isTopMatch: true,
+            tracksViewModel: CareerTracksViewModel(appViewModel: AppViewModel())
         )
     }
 }

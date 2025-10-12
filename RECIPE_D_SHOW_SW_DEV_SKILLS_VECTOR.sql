@@ -1,0 +1,43 @@
+USE DATABASE ONET_CAREER_DB;
+USE SCHEMA CAREER_SCHEMA;
+
+-- Show the SKILLS_VECTOR for Software Developers
+SELECT 'Software Developers SKILLS_VECTOR:' AS INFO;
+SELECT
+    ONET_SOC_CODE,
+    JOB_TITLE,
+    SKILLS_VECTOR
+FROM CAREER_FULL_VECTORS
+WHERE ONET_SOC_CODE = '15-1252.00';
+
+-- Parse the skills vector to see individual skills
+SELECT 'Individual skills in Software Developers SKILLS_VECTOR:' AS INFO;
+SELECT
+    ONET_SOC_CODE,
+    JOB_TITLE,
+    f.VALUE AS SKILL_OBJECT
+FROM CAREER_FULL_VECTORS,
+LATERAL FLATTEN(input => SKILLS_VECTOR) f
+WHERE ONET_SOC_CODE = '15-1252.00';
+
+-- Also check what's in SKILLS_FACT for 15-1252.00 with both IM and LV scales
+SELECT 'SKILLS_FACT for Software Developers (both IM and LV):' AS INFO;
+SELECT
+    ONET_SOC_CODE,
+    ELEMENT_ID,
+    ELEMENT_NAME,
+    SCALE_ID,
+    DATA_VALUE
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE = '15-1252.00'
+ORDER BY SCALE_ID, DATA_VALUE DESC;
+
+-- If that returns nothing, check if there's a similar SOC code
+SELECT 'All SOC codes starting with 15-125x:' AS INFO;
+SELECT DISTINCT
+    ONET_SOC_CODE,
+    COUNT(*) AS NUM_SKILLS
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE LIKE '15-125%'
+GROUP BY ONET_SOC_CODE
+ORDER BY ONET_SOC_CODE;

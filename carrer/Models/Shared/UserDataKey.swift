@@ -20,6 +20,7 @@ public enum UserDataKey: Hashable {
     case extracurricularOther
     case careerInterests
     case careerInterestsOther
+    case activeCareerInterests   // Currently active career interests for filtering (Recipe D v4.0)
     case workValues              // Work Values scores (Recipe C)
     case careerSuggestions
     case questionBank
@@ -29,4 +30,8 @@ public enum UserDataKey: Hashable {
     
     // Add the new case for AI Assistant tutorial
     case hasSeenAIAssistantTutorial
+
+    // Career Tracks & Skills (Career Planning)
+    case userSkillsData         // UserSkillsData - user's skill self-assessments
+    case trackedCareers         // [CareerTrack] - careers being actively tracked
 }
