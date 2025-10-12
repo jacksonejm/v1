@@ -1,0 +1,41 @@
+USE DATABASE ONET_CAREER_DB;
+USE SCHEMA CAREER_SCHEMA;
+
+-- Does Software Developers (15-1252.00) exist in SKILLS_FACT at all?
+SELECT 'Does 15-1252.00 exist in SKILLS_FACT?' AS INFO;
+SELECT COUNT(*) AS NUM_RECORDS
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE = '15-1252.00';
+
+-- What SOC codes exist that start with 15- (Computer/Math occupations)?
+SELECT 'Computer/Math occupations (15-xxxx) in SKILLS_FACT:' AS INFO;
+SELECT DISTINCT
+    ONET_SOC_CODE,
+    COUNT(*) AS NUM_SKILLS
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE LIKE '15-%'
+GROUP BY ONET_SOC_CODE
+ORDER BY ONET_SOC_CODE
+LIMIT 20;
+
+-- What does OCCUPATION_DIM say about Software Developers?
+SELECT 'Software Developer titles in OCCUPATION_DIM:' AS INFO;
+SELECT
+    ONET_SOC_CODE,
+    TITLE
+FROM OCCUPATION_DIM
+WHERE TITLE ILIKE '%software%developer%'
+   OR TITLE ILIKE '%software%engineer%'
+   OR ONET_SOC_CODE = '15-1252.00'
+ORDER BY ONET_SOC_CODE;
+
+-- Check what's in CAREER_FULL_VECTORS for Software Developers
+SELECT 'Software Developers in CAREER_FULL_VECTORS:' AS INFO;
+SELECT
+    ONET_SOC_CODE,
+    JOB_TITLE,
+    ARRAY_SIZE(SKILLS_VECTOR) AS NUM_SKILLS
+FROM CAREER_FULL_VECTORS
+WHERE JOB_TITLE ILIKE '%software%developer%'
+   OR ONET_SOC_CODE = '15-1252.00'
+LIMIT 10;

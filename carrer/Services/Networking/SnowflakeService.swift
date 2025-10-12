@@ -73,12 +73,25 @@ class SnowflakeService {
 
     // MARK: - Public Methods
 
-    /// Get career matches based on RIASEC scores and Work Values
+    /// Get career matches based on RIASEC scores, Work Values, Skills, and Context (Recipe D v4.0)
     /// - Parameters:
     ///   - scores: Dictionary with keys R, I, A, S, E, C and Float values (0-5 scale)
     ///   - workValues: Optional dictionary with work values (1-5 scale). If nil, defaults to 3.0 for all
-    /// - Returns: Array of O*NET occupations matching the user's interests and values
-    func getCareerMatches(scores: [String: Float], workValues: [String: Float]? = nil) async throws -> [ONetOccupation] {
+    ///   - subjects: Optional array of subject names (e.g., ["Math", "Science"])
+    ///   - activities: Optional array of activity names (e.g., ["Coding/Programming", "Debate"])
+    ///   - careerInterests: Optional array of career interests (e.g., ["Software Developer"])
+    ///   - studentLevel: Optional education level ("High School", "Undergraduate", "Graduate")
+    ///   - currentStatus: Optional current status ("Student", "Career Changer", etc.)
+    /// - Returns: Array of O*NET occupations with 4-dimensional match scores
+    func getCareerMatches(
+        scores: [String: Float],
+        workValues: [String: Float]? = nil,
+        subjects: [String]? = nil,
+        activities: [String]? = nil,
+        careerInterests: [String]? = nil,
+        studentLevel: String? = nil,
+        currentStatus: String? = nil
+    ) async throws -> [ONetOccupation] {
         // Ensure we have valid RIASEC scores for all 6 dimensions
         guard let r = scores["R"],
               let i = scores["I"],
@@ -97,28 +110,96 @@ class SnowflakeService {
         let support = workValues?["support"] ?? 3.0
         let workingConditions = workValues?["working_conditions"] ?? 3.0
 
-        // Call v3.0 with both RIASEC and Work Values
+        // Recipe D v4.0: Prepare JSON arrays for subjects, activities, career interests
+        let encoder = JSONEncoder()
+        let subjectsJSON = try encoder.encode(subjects ?? [])
+        let activitiesJSON = try encoder.encode(activities ?? [])
+        let interestsJSON = try encoder.encode(careerInterests ?? [])
+
+        guard let subjectsStr = String(data: subjectsJSON, encoding: .utf8),
+              let activitiesStr = String(data: activitiesJSON, encoding: .utf8),
+              let interestsStr = String(data: interestsJSON, encoding: .utf8) else {
+            throw SnowflakeError.invalidConfiguration
+        }
+
+        let level = studentLevel ?? "Unknown"
+        let status = currentStatus ?? "Unknown"
+
+        // Call Recipe D v4.0 with all 17 parameters (6 RIASEC + 6 Work Values + 5 context)
         let sql = """
-        CALL \(database).\(schema).SP_GET_CAREER_MATCHES_V3(\(r), \(i), \(a), \(s), \(e), \(c), \(achievement), \(independence), \(recognition), \(relationships), \(support), \(workingConditions))
+        CALL \(database).\(schema).SP_GET_CAREER_MATCHES_V4(
+            \(r), \(i), \(a), \(s), \(e), \(c),
+            \(achievement), \(independence), \(recognition), \(relationships), \(support), \(workingConditions),
+            '\(subjectsStr.replacingOccurrences(of: "'", with: "''"))',
+            '\(activitiesStr.replacingOccurrences(of: "'", with: "''"))',
+            '\(interestsStr.replacingOccurrences(of: "'", with: "''"))',
+            '\(level)',
+            '\(status)'
+        )
         """
+
+        print("📊 Recipe D v4.0 Call:")
+        print("  Subjects: \(subjects?.joined(separator: ", ") ?? "none")")
+        print("  Activities: \(activities?.joined(separator: ", ") ?? "none")")
+        print("  Career Interests: \(careerInterests?.joined(separator: ", ") ?? "none")")
+        print("  Student Level: \(level)")
+        print("  Status: \(status)")
 
         let response = try await executeSQLStatement(sql)
 
-        // Parse the response JSON string
+        // Parse the response - Recipe D v4.0 returns JSON string
         guard let resultString = response["data"] as? [[String]],
               let firstRow = resultString.first,
               let jsonString = firstRow.first else {
             throw SnowflakeError.noData
         }
 
-        // Decode the JSON string into ONetOccupation array
+        print("📦 Raw JSON response length: \(jsonString.count) characters")
+
+        // Decode the JSON string into array of dictionaries
         guard let jsonData = jsonString.data(using: .utf8) else {
             throw SnowflakeError.decodingFailed
         }
 
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let occupations = try decoder.decode([ONetOccupation].self, from: jsonData)
+        // Parse JSON array manually since structure is custom
+        guard let jsonArray = try JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]] else {
+            throw SnowflakeError.decodingFailed
+        }
+
+        var occupations: [ONetOccupation] = []
+
+        for item in jsonArray {
+            guard let code = item["ONET_SOC_CODE"] as? String,
+                  let title = item["JOB_TITLE"] as? String,
+                  let description = item["DESCRIPTION"] as? String,
+                  let interestsMatch = item["INTERESTS_MATCH"] as? Double,
+                  let valuesMatch = item["VALUES_MATCH"] as? Double,
+                  let skillsMatch = item["SKILLS_MATCH"] as? Double,
+                  let contextScore = item["CONTEXT_SCORE"] as? Double,
+                  let finalScore = item["FINAL_SCORE"] as? Double,
+                  let explanation = item["MATCH_EXPLANATION"] as? String else {
+                continue
+            }
+
+            let occupation = ONetOccupation(
+                onetSocCode: code,
+                title: title,
+                description: description,
+                match: Int(finalScore * 100 / 7.0),  // Convert 0-7 scale to 0-100 percentage
+                education: nil,
+                outlook: nil,
+                salary: nil,
+                matchExplanation: explanation,
+                interestsMatch: interestsMatch,
+                valuesMatch: valuesMatch,
+                skillsMatch: skillsMatch,
+                contextScore: contextScore
+            )
+
+            occupations.append(occupation)
+        }
+
+        print("✅ Recipe D v4.0 returned \(occupations.count) matches")
 
         return occupations
     }

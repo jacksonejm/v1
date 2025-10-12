@@ -498,7 +498,7 @@ class AppViewModel: ObservableObject {
     
     /// Generate career suggestions based on user responses using O*NET data
     func generateCareerSuggestions() async {
-        print("🚀 generateCareerSuggestions started - Using O*NET Snowflake Agent")
+        print("🚀 generateCareerSuggestions started - Recipe D v4.0 Multi-Dimensional Matching")
         await MainActor.run {
             isLoading = true
         }
@@ -530,7 +530,7 @@ class AppViewModel: ObservableObject {
                     "working_conditions": Float(workValuesData["working_conditions"] ?? 3.0)
                 ]
 
-                print("📊 Work Values extracted (Recipe C v3.0):")
+                print("📊 Work Values extracted:")
                 for (value, score) in workValuesDict!.sorted(by: { $0.key < $1.key }) {
                     print("  \(value): \(String(format: "%.2f", score))")
                 }
@@ -538,14 +538,62 @@ class AppViewModel: ObservableObject {
                 print("ℹ️ No work values provided, using defaults (3.0 = moderate importance)")
             }
 
-            // Fetch career matches from Snowflake O*NET (v3.0 with work values)
+            // ⭐ NEW Recipe D v4.0: Extract subjects
+            var subjects: [String]? = nil
+            if let subjectsSet = userData[.favoriteSubjects] as? Set<SchoolSubject> {
+                subjects = subjectsSet.map { $0.name }
+                print("📚 Subjects extracted: \(subjects!.joined(separator: ", "))")
+            }
+
+            // ⭐ NEW Recipe D v4.0: Extract activities
+            var activities: [String]? = nil
+            if let activitiesSet = userData[.extracurriculars] as? Set<Activity> {
+                activities = activitiesSet.map { $0.name }
+                print("🎭 Activities extracted: \(activities!.joined(separator: ", "))")
+            }
+
+            // ⭐ NEW Recipe D v4.0: Extract career interests
+            var careerInterests: [String]? = nil
+            if let interestsSet = userData[.careerInterests] as? Set<String> {
+                careerInterests = Array(interestsSet)
+                print("💼 Career Interests extracted: \(careerInterests!.joined(separator: ", "))")
+            }
+
+            // ⭐ NEW Recipe D v4.0: Extract student level
+            let studentLevel = userData[.studentLevel] as? String
+            if let level = studentLevel {
+                print("🎓 Student Level: \(level)")
+            }
+
+            // ⭐ NEW Recipe D v4.0: Extract current status
+            var currentStatus: String? = nil
+            if let status = userData[.currentStatus] as? SelectionOption {
+                currentStatus = status.title
+                print("👤 Current Status: \(status.title)")
+            }
+
+            print("\n🎯 Recipe D v4.0 Input Summary:")
+            print("  RIASEC: \(riasecScores.count) dimensions")
+            print("  Work Values: \(workValuesDict?.count ?? 0) values")
+            print("  Subjects: \(subjects?.count ?? 0)")
+            print("  Activities: \(activities?.count ?? 0)")
+            print("  Career Interests: \(careerInterests?.count ?? 0)")
+            print("  Student Level: \(studentLevel ?? "not set")")
+            print("  Current Status: \(currentStatus ?? "not set")")
+
+            // Fetch career matches from Snowflake O*NET (Recipe D v4.0 with all dimensions)
             let snowflakeService = SnowflakeService.shared
             let onetOccupations = try await snowflakeService.getCareerMatches(
                 scores: riasecScores,
-                workValues: workValuesDict
+                workValues: workValuesDict,
+                subjects: subjects,
+                activities: activities,
+                careerInterests: careerInterests,
+                studentLevel: studentLevel,
+                currentStatus: currentStatus
             )
 
-            print("✅ Received \(onetOccupations.count) O*NET career matches")
+            print("✅ Received \(onetOccupations.count) O*NET career matches from Recipe D v4.0")
 
             // Convert O*NET occupations to CareerTrack objects
             await MainActor.run {
@@ -557,7 +605,7 @@ class AppViewModel: ObservableObject {
                 userData[.careerSuggestions] = careerTracks as AnyHashable
                 userData[.riasecResults] = riasecScores as AnyHashable
 
-                print("✅ Career generation complete with \(careerTracks.count) O*NET-powered tracks")
+                print("✅ Recipe D v4.0 complete with \(careerTracks.count) multi-dimensional matches")
                 isLoading = false
             }
 
@@ -571,6 +619,88 @@ class AppViewModel: ObservableObject {
 
                 isLoading = false
             }
+        }
+    }
+
+    /// Refresh career recommendations with updated career interests (Recipe D v4.0)
+    /// Used by AllRecommendationsView when toggling interest filters
+    func refreshRecommendationsWithInterests(_ updatedInterests: [String]) async {
+        print("🔄 Refreshing recommendations with updated interests - Recipe D v4.0")
+
+        do {
+            // Use existing RIASEC scores
+            let riasecScores = calculateRIASECScores()
+
+            guard !riasecScores.isEmpty else {
+                print("⚠️ No RIASEC scores available")
+                return
+            }
+
+            // Extract existing work values
+            var workValuesDict: [String: Float]? = nil
+            if let workValuesData = userData[.workValues] as? [String: Double] {
+                workValuesDict = [
+                    "achievement": Float(workValuesData["achievement"] ?? 3.0),
+                    "independence": Float(workValuesData["independence"] ?? 3.0),
+                    "recognition": Float(workValuesData["recognition"] ?? 3.0),
+                    "relationships": Float(workValuesData["relationships"] ?? 3.0),
+                    "support": Float(workValuesData["support"] ?? 3.0),
+                    "working_conditions": Float(workValuesData["working_conditions"] ?? 3.0)
+                ]
+            }
+
+            // Extract subjects
+            var subjects: [String]? = nil
+            if let subjectsSet = userData[.favoriteSubjects] as? Set<SchoolSubject> {
+                subjects = subjectsSet.map { $0.name }
+            }
+
+            // Extract activities
+            var activities: [String]? = nil
+            if let activitiesSet = userData[.extracurriculars] as? Set<Activity> {
+                activities = activitiesSet.map { $0.name }
+            }
+
+            // Use the UPDATED career interests
+            let careerInterests = updatedInterests.isEmpty ? nil : updatedInterests
+
+            // Extract student level and status
+            let studentLevel = userData[.studentLevel] as? String
+            var currentStatus: String? = nil
+            if let status = userData[.currentStatus] as? SelectionOption {
+                currentStatus = status.title
+            }
+
+            print("🔄 Updated interests: \(careerInterests?.joined(separator: ", ") ?? "none")")
+
+            // Fetch updated career matches from Snowflake
+            let snowflakeService = SnowflakeService.shared
+            let onetOccupations = try await snowflakeService.getCareerMatches(
+                scores: riasecScores,
+                workValues: workValuesDict,
+                subjects: subjects,
+                activities: activities,
+                careerInterests: careerInterests,
+                studentLevel: studentLevel,
+                currentStatus: currentStatus
+            )
+
+            print("✅ Received \(onetOccupations.count) updated career matches")
+
+            // Update career tracks
+            await MainActor.run {
+                careerTracks = onetOccupations.map { occupation in
+                    CareerTrack.from(onetOccupation: occupation, progress: 0)
+                }
+
+                // Update stored career suggestions
+                userData[.careerSuggestions] = careerTracks as AnyHashable
+
+                print("✅ Recommendations refreshed with updated interests")
+            }
+
+        } catch {
+            print("❌ Error refreshing recommendations: \(error.localizedDescription)")
         }
     }
 

@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5d7af88c11f84b2498e955bb /* TrackDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63394ea557c74c948361d204 /* TrackDetailView.swift */; };
 		A41584FD2DC1C64F00EA2B9E /* APIKeys.plist in Resources */ = {isa = PBXBuildFile; fileRef = A41584FC2DC1C64F00EA2B9E /* APIKeys.plist */; };
 		A45176502DDF618A00BB9752 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A462BB952DDF1F3D004FCB0E /* XCTest.framework */; platformFilter = ios; };
 		A45176512DDF61E400BB9752 /* carrerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B520BB2DDF1AFF00B71A54 /* carrerTests.swift */; };
@@ -27,6 +28,11 @@
 		A46A407C2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A407B2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift */; };
 		A46A407F2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */; };
 		A46A40822DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A46A40802DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift */; };
+		A471EF9B2E9B52D000F40652 /* MatchTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EF9A2E9B52D000F40652 /* MatchTier.swift */; };
+		A471EF9E2E9B532F00F40652 /* MatchPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EF9C2E9B532F00F40652 /* MatchPill.swift */; };
+		A471EF9F2E9B532F00F40652 /* TopMatchBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EF9D2E9B532F00F40652 /* TopMatchBadge.swift */; };
+		A471EFA12E9B538300F40652 /* MatchBreakdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFA02E9B538300F40652 /* MatchBreakdownView.swift */; };
+		A471EFBC2E9B709A00F40652 /* TrackDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFBB2E9B709A00F40652 /* TrackDetailView.swift */; };
 		A4AA47A22E95EAE90082C1B5 /* WorkValuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */; };
 		A4AA47A42E95EB700082C1B5 /* CareerSkill.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */; };
 		A4AA47A62E95EB8D0082C1B5 /* JobSearchStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */; };
@@ -144,10 +150,20 @@
 		A4B5212E2DDF1AFF00B71A54 /* AIAssistantOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B520802DDF1AFF00B71A54 /* AIAssistantOverlay.swift */; };
 		A4B5212F2DDF1AFF00B71A54 /* CareerTracksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B5208A2DDF1AFF00B71A54 /* CareerTracksView.swift */; };
 		A4C5A5BE2CAF97FC00D187EB /* carrerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C5A5BD2CAF97FC00D187EB /* carrerUITestsLaunchTests.swift */; };
+		A4CAF9C02E9960F600A71507 /* CareerInterestFilterChip 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CAF9BF2E9960F600A71507 /* CareerInterestFilterChip 2.swift */; };
+		A4CAF9C22E99615100A71507 /* AllRecommendationsView 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CAF9C12E99615100A71507 /* AllRecommendationsView 2.swift */; };
+		A4CAF9C62E9B055A00A71507 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CAF9C52E9B055A00A71507 /* AnalyticsService.swift */; };
+		A4CAF9CA2E9B05FC00A71507 /* CareerMatchDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CAF9C92E9B05FC00A71507 /* CareerMatchDiff.swift */; };
+		A4CAF9CC2E9B068500A71507 /* SmartSuggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CAF9CB2E9B068500A71507 /* SmartSuggestion.swift */; };
+		A4CAF9D12E9B077900A71507 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = A4CAF9D02E9B077900A71507 /* FirebaseAnalytics */; };
 		A4DDE50F2CC69A5F00E829E7 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A4DDE50E2CC69A5F00E829E7 /* FirebaseAuth */; };
 		A4DDE5112CC69A5F00E829E7 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A4DDE5102CC69A5F00E829E7 /* FirebaseCore */; };
 		A4DDE5132CC69A5F00E829E7 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A4DDE5122CC69A5F00E829E7 /* FirebaseFirestore */; };
 		A4DDE5152CC6A80D00E829E7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A4DDE5142CC6A80D00E829E7 /* GoogleService-Info.plist */; };
+		B46EC4163AEC7251EFF084C4 /* CareerTracksViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9951E2F2CD1C9B28B2F7AEB3 /* CareerTracksViewModel.swift */; };
+		C2AAE3EC176E74190B7F9689 /* CareerTrackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1721CFD9D92BAF2C97A5ADAB /* CareerTrackModels.swift */; };
+		DA8E57CCDE268EE7CBB4F470 /* SkillAssessmentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E6C4712C42B18C67B368D3 /* SkillAssessmentSheet.swift */; };
+		262C695FABFA4917B222CDE424C1DA53 /* AddToTrackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF48FE1BE9946EBAB8DBF7AD85D4AF0 /* AddToTrackSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -168,6 +184,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1721CFD9D92BAF2C97A5ADAB /* CareerTrackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerTrackModels.swift; sourceTree = "<group>"; };
+		63394ea557c74c948361d204 /* TrackDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackDetailView.swift; sourceTree = "<group>"; };
+		9951E2F2CD1C9B28B2F7AEB3 /* CareerTracksViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerTracksViewModel.swift; sourceTree = "<group>"; };
 		A41584FC2DC1C64F00EA2B9E /* APIKeys.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = APIKeys.plist; sourceTree = "<group>"; };
 		A45176522DE201E500BB9752 /* OnboardingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingMode.swift; sourceTree = "<group>"; };
 		A45176542DE2022500BB9752 /* OnboardingModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingModeManager.swift; sourceTree = "<group>"; };
@@ -187,6 +206,11 @@
 		A46A407B2DE2BBE900D2F2A7 /* MultiTurnConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiTurnConversationManager.swift; sourceTree = "<group>"; };
 		A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAnalytics.swift; sourceTree = "<group>"; };
 		A46A40802DE2C41F00D2F2A7 /* ConversationAnalyticsDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationAnalyticsDashboard.swift; sourceTree = "<group>"; };
+		A471EF9A2E9B52D000F40652 /* MatchTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchTier.swift; sourceTree = "<group>"; };
+		A471EF9C2E9B532F00F40652 /* MatchPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchPill.swift; sourceTree = "<group>"; };
+		A471EF9D2E9B532F00F40652 /* TopMatchBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopMatchBadge.swift; sourceTree = "<group>"; };
+		A471EFA02E9B538300F40652 /* MatchBreakdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchBreakdownView.swift; sourceTree = "<group>"; };
+		A471EFBB2E9B709A00F40652 /* TrackDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackDetailView.swift; sourceTree = "<group>"; };
 		A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkValuesView.swift; sourceTree = "<group>"; };
 		A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerSkill.swift; sourceTree = "<group>"; };
 		A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobSearchStrategy.swift; sourceTree = "<group>"; };
@@ -308,8 +332,19 @@
 		A4C5A5AD2CAF97FC00D187EB /* carrerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = carrerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A4C5A5B72CAF97FC00D187EB /* carrerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = carrerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A4C5A5BD2CAF97FC00D187EB /* carrerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = carrerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		A4CAF9BF2E9960F600A71507 /* CareerInterestFilterChip 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CareerInterestFilterChip 2.swift"; sourceTree = "<group>"; };
+		A4CAF9C12E99615100A71507 /* AllRecommendationsView 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AllRecommendationsView 2.swift"; sourceTree = "<group>"; };
+		A4CAF9C52E9B055A00A71507 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
+		A4CAF9C92E9B05FC00A71507 /* CareerMatchDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerMatchDiff.swift; sourceTree = "<group>"; };
+		A4CAF9CB2E9B068500A71507 /* SmartSuggestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartSuggestion.swift; sourceTree = "<group>"; };
 		A4DDE5142CC6A80D00E829E7 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		D2E6C4712C42B18C67B368D3 /* SkillAssessmentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkillAssessmentSheet.swift; sourceTree = "<group>"; };
+		AEF48FE1BE9946EBAB8DBF7AD85D4AF0 /* AddToTrackSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToTrackSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A4CAF9CE2E9B06D600A71507 /* Export */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Export; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A4C5A5982CAF97F900D187EB /* Frameworks */ = {
@@ -318,6 +353,7 @@
 			files = (
 				A4DDE5112CC69A5F00E829E7 /* FirebaseCore in Frameworks */,
 				A4DDE50F2CC69A5F00E829E7 /* FirebaseAuth in Frameworks */,
+				A4CAF9D12E9B077900A71507 /* FirebaseAnalytics in Frameworks */,
 				A4DDE5132CC69A5F00E829E7 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -344,6 +380,7 @@
 		A46A407E2DE2C3DD00D2F2A7 /* Analytics */ = {
 			isa = PBXGroup;
 			children = (
+				A4CAF9C52E9B055A00A71507 /* AnalyticsService.swift */,
 				A46A407D2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift */,
 			);
 			name = Analytics;
@@ -373,6 +410,10 @@
 		A4B520352DDF1AFF00B71A54 /* CareerExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				1721CFD9D92BAF2C97A5ADAB /* CareerTrackModels.swift */,
+				A471EF9A2E9B52D000F40652 /* MatchTier.swift */,
+				A4CAF9CB2E9B068500A71507 /* SmartSuggestion.swift */,
+				A4CAF9C92E9B05FC00A71507 /* CareerMatchDiff.swift */,
 				A4AA47A72E95EBA80082C1B5 /* ONetOccupation.swift */,
 				A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */,
 				A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */,
@@ -497,6 +538,7 @@
 		A4B520592DDF1AFF00B71A54 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A4CAF9CE2E9B06D600A71507 /* Export */,
 				A46A407E2DE2C3DD00D2F2A7 /* Analytics */,
 				A4B5204D2DDF1AFF00B71A54 /* AI */,
 				A4B520512DDF1AFF00B71A54 /* Networking */,
@@ -637,6 +679,8 @@
 		A4B520792DDF1AFF00B71A54 /* CareerExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				9951E2F2CD1C9B28B2F7AEB3 /* CareerTracksViewModel.swift */,
+				A4AA47AF2E95EECB0082C1B5 /* ONetCareerViewModel.swift */,
 				A4B520782DDF1AFF00B71A54 /* RIASECScoreCalculator.swift */,
 			);
 			path = CareerExplorer;
@@ -687,6 +731,12 @@
 		A4B520932DDF1AFF00B71A54 /* CareerExplorer */ = {
 			isa = PBXGroup;
 			children = (
+				A471EFBB2E9B709A00F40652 /* TrackDetailView.swift */,
+				63394ea557c74c948361d204 /* TrackDetailView.swift */,
+				D2E6C4712C42B18C67B368D3 /* SkillAssessmentSheet.swift */,
+				AEF48FE1BE9946EBAB8DBF7AD85D4AF0 /* AddToTrackSheet.swift */,
+				A471EFA02E9B538300F40652 /* MatchBreakdownView.swift */,
+				A4CAF9C12E99615100A71507 /* AllRecommendationsView 2.swift */,
 				A4AA47AD2E95ED600082C1B5 /* ONetCareerDetailView.swift */,
 				A4B520852DDF1AFF00B71A54 /* CareerLearningSection.swift */,
 				A4B520862DDF1AFF00B71A54 /* CareerReadinessView.swift */,
@@ -709,6 +759,7 @@
 		A4B520A32DDF1AFF00B71A54 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A4CAF9BF2E9960F600A71507 /* CareerInterestFilterChip 2.swift */,
 				A46A40772DE2A2D000D2F2A7 /* LoadingOverlay.swift */,
 				A4B520942DDF1AFF00B71A54 /* ActionCard.swift */,
 				A4B520952DDF1AFF00B71A54 /* CareerInterestPatternView.swift */,
@@ -759,6 +810,8 @@
 		A4B520B92DDF1AFF00B71A54 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				A471EF9C2E9B532F00F40652 /* MatchPill.swift */,
+				A471EF9D2E9B532F00F40652 /* TopMatchBadge.swift */,
 				A4B520B62DDF1AFF00B71A54 /* ContentView.swift */,
 				A4B520B72DDF1AFF00B71A54 /* MainAppView.swift */,
 				A4B520B82DDF1AFF00B71A54 /* SplashScreen.swift */,
@@ -782,7 +835,6 @@
 		A4B520C02DDF1AFF00B71A54 /* carrer */ = {
 			isa = PBXGroup;
 			children = (
-				A4AA47AF2E95EECB0082C1B5 /* ONetCareerViewModel.swift */,
 				A4B5203E2DDF1AFF00B71A54 /* Models */,
 				A4B520452DDF1AFF00B71A54 /* New */,
 				A4B520482DDF1AFF00B71A54 /* Preview Content */,
@@ -864,11 +916,15 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				A4CAF9CE2E9B06D600A71507 /* Export */,
+			);
 			name = carrer;
 			packageProductDependencies = (
 				A4DDE50E2CC69A5F00E829E7 /* FirebaseAuth */,
 				A4DDE5102CC69A5F00E829E7 /* FirebaseCore */,
 				A4DDE5122CC69A5F00E829E7 /* FirebaseFirestore */,
+				A4CAF9D02E9B077900A71507 /* FirebaseAnalytics */,
 			);
 			productName = carrer;
 			productReference = A4C5A59B2CAF97F900D187EB /* carrer.app */;
@@ -1007,6 +1063,7 @@
 				A4AA47A82E95EBA80082C1B5 /* ONetOccupation.swift in Sources */,
 				A4B520D02DDF1AFF00B71A54 /* StudentLevelView.swift in Sources */,
 				A4B520D12DDF1AFF00B71A54 /* CareerTrack.swift in Sources */,
+				C2AAE3EC176E74190B7F9689 /* CareerTrackModels.swift in Sources */,
 				A46A407F2DE2C3DD00D2F2A7 /* ConversationAnalytics.swift in Sources */,
 				A4B520D22DDF1AFF00B71A54 /* ConversationStore.swift in Sources */,
 				A46A406A2DE2A17600D2F2A7 /* OnboardingData.swift in Sources */,
@@ -1031,8 +1088,10 @@
 				A4B520E52DDF1AFF00B71A54 /* JobCarousel.swift in Sources */,
 				A4B520E62DDF1AFF00B71A54 /* InterestCircle.swift in Sources */,
 				A4B520E72DDF1AFF00B71A54 /* Updated_CareerRecommendation_Technical_Expertise_Score.mlmodel in Sources */,
+				A471EFBC2E9B709A00F40652 /* TrackDetailView.swift in Sources */,
 				A45176552DE2022500BB9752 /* OnboardingModeManager.swift in Sources */,
 				A46A40762DE2A2AE00D2F2A7 /* ConversationalOnboardingView.swift in Sources */,
+				A4CAF9C22E99615100A71507 /* AllRecommendationsView 2.swift in Sources */,
 				A4B520E82DDF1AFF00B71A54 /* Spacing.swift in Sources */,
 				A4B520E92DDF1AFF00B71A54 /* ChatMessage.swift in Sources */,
 				A4B520EA2DDF1AFF00B71A54 /* CareerReadinessView.swift in Sources */,
@@ -1040,6 +1099,10 @@
 				A46A40742DE2A27900D2F2A7 /* ContextualResponseGenerator.swift in Sources */,
 				A4B520EC2DDF1AFF00B71A54 /* GetNameView.swift in Sources */,
 				A4B520ED2DDF1AFF00B71A54 /* RIASECQuestion.swift in Sources */,
+				A471EFA12E9B538300F40652 /* MatchBreakdownView.swift in Sources */,
+				5d7af88c11f84b2498e955bb /* TrackDetailView.swift in Sources */,
+				DA8E57CCDE268EE7CBB4F470 /* SkillAssessmentSheet.swift in Sources */,
+				262C695FABFA4917B222CDE424C1DA53 /* AddToTrackSheet.swift in Sources */,
 				A4B520EE2DDF1AFF00B71A54 /* UpdateFieldTool.swift in Sources */,
 				A4B520EF2DDF1AFF00B71A54 /* MyPathApp.swift in Sources */,
 				A4AA47AA2E95EBEB0082C1B5 /* SnowflakeService.swift in Sources */,
@@ -1060,12 +1123,14 @@
 				A4B520FA2DDF1AFF00B71A54 /* PersistenceController.swift in Sources */,
 				A4B520FB2DDF1AFF00B71A54 /* ResourceCard.swift in Sources */,
 				A4B520FC2DDF1AFF00B71A54 /* MilestoneCard.swift in Sources */,
+				A4CAF9C02E9960F600A71507 /* CareerInterestFilterChip 2.swift in Sources */,
 				A4B520FD2DDF1AFF00B71A54 /* TypingIndicator.swift in Sources */,
 				A4B520FE2DDF1AFF00B71A54 /* UserDataKey.swift in Sources */,
 				A4B520FF2DDF1AFF00B71A54 /* NextStepItem.swift in Sources */,
 				A4B521002DDF1AFF00B71A54 /* OnboardingStoreKey.swift in Sources */,
 				A46A40722DE2A26900D2F2A7 /* ConversationalDataExtractor.swift in Sources */,
 				A4AA47A22E95EAE90082C1B5 /* WorkValuesView.swift in Sources */,
+				A4CAF9C62E9B055A00A71507 /* AnalyticsService.swift in Sources */,
 				A4B521012DDF1AFF00B71A54 /* SupabaseService.swift in Sources */,
 				A4B521022DDF1AFF00B71A54 /* ToolRegistry.swift in Sources */,
 				A4B521032DDF1AFF00B71A54 /* Updated_CareerRecommendation_Job_Complexity_Score.mlmodel in Sources */,
@@ -1075,15 +1140,18 @@
 				A4B521072DDF1AFF00B71A54 /* RIASECDimension.swift in Sources */,
 				A4B521082DDF1AFF00B71A54 /* CompletionScreenView.swift in Sources */,
 				A4B521092DDF1AFF00B71A54 /* SecureOnboardingCleanupTask.swift in Sources */,
+				A471EF9B2E9B52D000F40652 /* MatchTier.swift in Sources */,
 				A4B5210A2DDF1AFF00B71A54 /* AppViewModel.swift in Sources */,
 				A4AA47A62E95EB8D0082C1B5 /* JobSearchStrategy.swift in Sources */,
 				A4B5210B2DDF1AFF00B71A54 /* WelcomeMessageView.swift in Sources */,
 				A4AA47B02E95EECB0082C1B5 /* ONetCareerViewModel.swift in Sources */,
+				B46EC4163AEC7251EFF084C4 /* CareerTracksViewModel.swift in Sources */,
 				A4B5210C2DDF1AFF00B71A54 /* OnboardingStep.swift in Sources */,
 				A4B5210D2DDF1AFF00B71A54 /* SecureOnboardingStore.swift in Sources */,
 				A4B5210E2DDF1AFF00B71A54 /* Updated_CareerRecommendation_Social_Interaction_Score.mlmodel in Sources */,
 				A4B5210F2DDF1AFF00B71A54 /* CareerTrackCard.swift in Sources */,
 				A4B521102DDF1AFF00B71A54 /* AIAssistantViewModel.swift in Sources */,
+				A4CAF9CC2E9B068500A71507 /* SmartSuggestion.swift in Sources */,
 				A4B521112DDF1AFF00B71A54 /* OnboardingView.swift in Sources */,
 				A4B521122DDF1AFF00B71A54 /* AppColors.swift in Sources */,
 				A4B521132DDF1AFF00B71A54 /* ToolError.swift in Sources */,
@@ -1093,6 +1161,7 @@
 				A4B521162DDF1AFF00B71A54 /* JobDetailView.swift in Sources */,
 				A4B521172DDF1AFF00B71A54 /* Job.swift in Sources */,
 				A46A40702DE2A24300D2F2A7 /* ConversationalOnboardingEngine.swift in Sources */,
+				A4CAF9CA2E9B05FC00A71507 /* CareerMatchDiff.swift in Sources */,
 				A4B521182DDF1AFF00B71A54 /* TimelineItem.swift in Sources */,
 				A4B521192DDF1AFF00B71A54 /* Updated_CareerRecommendation_Physical_Demands_Score.mlmodel in Sources */,
 				A4B5211A2DDF1AFF00B71A54 /* ResponseChunk.swift in Sources */,
@@ -1116,6 +1185,8 @@
 				A46A406C2DE2A1DB00D2F2A7 /* ExtractedData.swift in Sources */,
 				A4B521292DDF1AFF00B71A54 /* OnboardingStore.swift in Sources */,
 				A4B5212A2DDF1AFF00B71A54 /* RecommendedCareersSection.swift in Sources */,
+				A471EF9E2E9B532F00F40652 /* MatchPill.swift in Sources */,
+				A471EF9F2E9B532F00F40652 /* TopMatchBadge.swift in Sources */,
 				A4B5212B2DDF1AFF00B71A54 /* AccountCreationPromptView.swift in Sources */,
 				A4B5212D2DDF1AFF00B71A54 /* InterestProfileView.swift in Sources */,
 				A4B5212E2DDF1AFF00B71A54 /* AIAssistantOverlay.swift in Sources */,
@@ -1459,6 +1530,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A4CAF9D02E9B077900A71507 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A4DDE50C2CC6978500E829E7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
 		A4DDE50E2CC69A5F00E829E7 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A4DDE50C2CC6978500E829E7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

@@ -1204,6 +1204,7 @@ struct SchoolSubject: Identifiable, Hashable {
     let name: String
     
     static let allSubjects: [SchoolSubject] = [
+        // Original subjects
         SchoolSubject(name: "Math"),
         SchoolSubject(name: "Science"),
         SchoolSubject(name: "Art"),
@@ -1211,6 +1212,14 @@ struct SchoolSubject: Identifiable, Hashable {
         SchoolSubject(name: "English"),
         SchoolSubject(name: "Technology"),
         SchoolSubject(name: "Physical Education"),
+
+        // NEW - Student-Friendly additions for Recipe D v4.0 (91% skills coverage)
+        SchoolSubject(name: "Business/Economics"),
+        SchoolSubject(name: "Computer Programming"),
+        SchoolSubject(name: "Psychology"),
+        SchoolSubject(name: "Biology"),
+        SchoolSubject(name: "World Languages"),
+
         SchoolSubject(name: "Other")
     ]
 }
@@ -1309,12 +1318,21 @@ struct Activity: Identifiable, Hashable {
     let name: String
     
     static let allActivities: [Activity] = [
+        // Original activities
         Activity(name: "Robotics Club"),
         Activity(name: "Drama or Theatre"),
         Activity(name: "Sports"),
         Activity(name: "Debate Team"),
         Activity(name: "Volunteering"),
         Activity(name: "Music or Band"),
+
+        // NEW - Student-Friendly additions for Recipe D v4.0 (91% skills coverage)
+        Activity(name: "Student Council"),
+        Activity(name: "Business Club/DECA"),
+        Activity(name: "Auto Shop/Mechanics"),
+        Activity(name: "Model UN"),
+        Activity(name: "Event Planning/School Events"),
+
         Activity(name: "Other")
     ]
 }

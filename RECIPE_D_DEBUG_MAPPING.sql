@@ -1,0 +1,38 @@
+USE DATABASE ONET_CAREER_DB;
+USE SCHEMA CAREER_SCHEMA;
+
+-- Check what's currently in ACTIVITY_SKILLS_MAPPING
+SELECT 'Current ACTIVITY_SKILLS_MAPPING for Coding/Programming:' AS INFO;
+SELECT * FROM ACTIVITY_SKILLS_MAPPING
+WHERE ACTIVITY_NAME = 'Coding/Programming';
+
+-- Check if table exists and has any data
+SELECT 'Total rows in ACTIVITY_SKILLS_MAPPING:' AS INFO;
+SELECT COUNT(*) FROM ACTIVITY_SKILLS_MAPPING;
+
+-- Check if SUBJECT_SKILLS_MAPPING has data
+SELECT 'Total rows in SUBJECT_SKILLS_MAPPING:' AS INFO;
+SELECT COUNT(*) FROM SUBJECT_SKILLS_MAPPING;
+
+-- Show what skills Software Developers have
+SELECT 'Top 10 skills for Software Developers:' AS INFO;
+SELECT
+    ELEMENT_ID,
+    ELEMENT_NAME,
+    DATA_VALUE AS IMPORTANCE
+FROM SKILLS_FACT
+WHERE ONET_SOC_CODE = '15-1252.00'
+  AND SCALE_ID = 'IM'
+ORDER BY DATA_VALUE DESC
+LIMIT 10;
+
+-- Try the join manually with Programming skill
+SELECT 'Manual join test - does 2.B.3.e exist for Software Developers?' AS INFO;
+SELECT
+    sf.ELEMENT_ID,
+    sf.ELEMENT_NAME,
+    sf.DATA_VALUE
+FROM SKILLS_FACT sf
+WHERE sf.ONET_SOC_CODE = '15-1252.00'
+  AND sf.SCALE_ID = 'IM'
+  AND sf.ELEMENT_ID = '2.B.3.e';

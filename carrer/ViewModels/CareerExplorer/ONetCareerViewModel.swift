@@ -82,8 +82,8 @@ class ONetCareerViewModel: ObservableObject {
         selectedOccupation = occupation
 
         // Fetch skills and job search strategy in parallel
-        async let skillsTask = fetchCareerSkills(occupationCode: occupation.code)
-        async let jobSearchTask = fetchJobSearchStrategy(occupationCode: occupation.code)
+        async let skillsTask = fetchCareerSkills(occupationCode: occupation.onetSocCode)
+        async let jobSearchTask = fetchJobSearchStrategy(occupationCode: occupation.onetSocCode)
 
         await skillsTask
         await jobSearchTask
