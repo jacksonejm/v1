@@ -149,19 +149,7 @@ struct AllRecommendationsView: View {
 
                 Spacer()
 
-                // Sort options (placeholder for future)
-                Menu {
-                    Button(action: {}) {
-                        Label("Best Match", systemImage: "star.fill")
-                    }
-                    Button(action: {}) {
-                        Label("Alphabetical", systemImage: "textformat")
-                    }
-                } label: {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
+                // Sort/filter functionality coming in v5.0 Phase 2 (Explore pillar)
             }
             .padding(.bottom, 16)
 
@@ -196,7 +184,7 @@ struct AllRecommendationsView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text(track.title)
+                    Text(displayTitle(for: track))
                         .font(.headline)
                         .foregroundColor(.primary)
 
@@ -479,6 +467,20 @@ struct AllRecommendationsView: View {
 
     private var hasDeselectedInterests: Bool {
         activeCareerInterests.count < originalCareerInterests.count
+    }
+
+    // MARK: - Display Helpers
+
+    /// Get display title for a career (prefers Canadian title when available)
+    private func displayTitle(for track: CareerTrack) -> String {
+        // Check if user is Canadian and if we have Canadian data
+        if viewModel.userCountry.usesNOC,
+           let onetCode = track.onetCode,
+           let canadianOcc = viewModel.canadianOccupationData[onetCode],
+           let canadianTitle = canadianOcc.canadianTitle {
+            return canadianTitle
+        }
+        return track.title
     }
 }
 
