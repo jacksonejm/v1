@@ -29,7 +29,7 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.userCountry, .usa, "Default country should be USA")
         XCTAssertTrue(viewModel.userData.isEmpty, "User data should be empty on init")
         XCTAssertTrue(viewModel.careerTracks.isEmpty, "Career tracks should be empty on init")
-        XCTAssertNil(viewModel.suggestions, "Career suggestions should be nil on init")
+        XCTAssertEqual(viewModel.appFlowState, .initial, "App should start in initial state")
     }
 
     // MARK: - User Data Tests
@@ -60,60 +60,52 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.userCountry.usesNOC)
     }
 
-    // MARK: - RIASEC Score Tests
+    // MARK: - RIASEC Data Storage Tests
 
-    func testRIASECScoreCalculation() throws {
-        // Mock RIASEC responses: all 5s for Realistic, 1s for others
+    func testRIASECResponsesStorage() throws {
+        // Test storing RIASEC responses (flattened format)
         let responses: [String: Int] = [
             "work_with_hands": 5,
-            "operate_machinery": 5,
+            "operate_machinery": 4,
             "build_things": 5,
-            "outdoor_work": 5,
-            "physical_tasks": 5,
-            // Add more realistic questions
-            "analyze_data": 1,
-            "conduct_research": 1,
-            "creative_projects": 1,
-            "help_others": 1,
-            "lead_teams": 1,
-            "follow_procedures": 1
+            "analyze_data": 3,
+            "conduct_research": 2,
+            "creative_projects": 4
         ]
 
         viewModel.userData[.riasecResponsesFlat] = responses
 
-        // Calculate scores
-        let scores = viewModel.calculateRIASECScores()
-
-        // Realistic should be highest
-        XCTAssertGreaterThan(scores["R"] ?? 0, scores["I"] ?? 0)
-        XCTAssertGreaterThan(scores["R"] ?? 0, scores["A"] ?? 0)
-
-        // All scores should be between 0 and 5
-        for (_, score) in scores {
-            XCTAssertGreaterThanOrEqual(score, 0.0)
-            XCTAssertLessThanOrEqual(score, 5.0)
-        }
-
-        // Should have all 6 dimensions
-        XCTAssertEqual(scores.count, 6)
-        XCTAssertNotNil(scores["R"])
-        XCTAssertNotNil(scores["I"])
-        XCTAssertNotNil(scores["A"])
-        XCTAssertNotNil(scores["S"])
-        XCTAssertNotNil(scores["E"])
-        XCTAssertNotNil(scores["C"])
+        // Verify storage
+        let storedResponses = viewModel.userData[.riasecResponsesFlat] as? [String: Int]
+        XCTAssertNotNil(storedResponses)
+        XCTAssertEqual(storedResponses?["work_with_hands"], 5)
+        XCTAssertEqual(storedResponses?["creative_projects"], 4)
+        XCTAssertEqual(storedResponses?.count, 6)
     }
 
-    func testRIASECScoresEmptyResponses() throws {
-        let scores = viewModel.calculateRIASECScores()
+    func testUpdateRIASECResponses() throws {
+        // Test dimension-specific RIASEC storage
+        let realisticResponses: [String: Int] = [
+            "work_with_hands": 5,
+            "operate_machinery": 4,
+            "build_things": 5
+        ]
 
-        // Should return zeros when no data
-        XCTAssertEqual(scores["R"], 0.0)
-        XCTAssertEqual(scores["I"], 0.0)
-        XCTAssertEqual(scores["A"], 0.0)
-        XCTAssertEqual(scores["S"], 0.0)
-        XCTAssertEqual(scores["E"], 0.0)
-        XCTAssertEqual(scores["C"], 0.0)
+        viewModel.updateRIASECResponses(dimension: .realistic, responses: realisticResponses)
+
+        // Verify flattened responses were updated
+        let flatResponses = viewModel.userData[.riasecResponsesFlat] as? [String: Int]
+        XCTAssertNotNil(flatResponses)
+        XCTAssertEqual(flatResponses?["work_with_hands"], 5)
+        XCTAssertEqual(flatResponses?["operate_machinery"], 4)
+
+        // Verify dimension-specific responses were stored
+        if let allResponses = viewModel.userData[.riasecResponses] as? [String: [String: Int]],
+           let realisticData = allResponses["R"] {
+            XCTAssertEqual(realisticData.count, 3)
+        } else {
+            XCTFail("RIASEC responses not stored correctly")
+        }
     }
 
     // MARK: - Onboarding Navigation Tests
@@ -211,8 +203,8 @@ final class AppViewModelTests: XCTestCase {
     // MARK: - App Flow State Tests
 
     func testAppFlowStateTransitions() throws {
-        // Start at welcome
-        XCTAssertEqual(viewModel.appFlowState, .welcome)
+        // Start at initial
+        XCTAssertEqual(viewModel.appFlowState, .initial)
 
         // Navigate to onboarding
         viewModel.appFlowState = .onboarding(step: .howDidYouHearAboutUs)
@@ -256,16 +248,19 @@ final class AppViewModelTests: XCTestCase {
 
     // MARK: - Performance Tests
 
-    func testRIASECCalculationPerformance() throws {
+    func testRIASECDataStoragePerformance() throws {
         // Prepare large response set
         var responses: [String: Int] = [:]
         for i in 1...100 {
             responses["q\(i)"] = Int.random(in: 1...5)
         }
-        viewModel.userData[.riasecResponsesFlat] = responses
 
         measure {
-            _ = viewModel.calculateRIASECScores()
+            viewModel.userData[.riasecResponsesFlat] = responses
+
+            // Verify storage
+            let stored = viewModel.userData[.riasecResponsesFlat] as? [String: Int]
+            XCTAssertNotNil(stored)
         }
     }
 
