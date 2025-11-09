@@ -1,2 +1,13 @@
 **/.claude/settings.local.json
 APIKeys.plist
+
+# RSA Keys and certificates
+*.pem
+*.p8
+*.key
+rsa_key*
+*.pub
+*.cer
+*.crt
+*.p12
+*.pfx
