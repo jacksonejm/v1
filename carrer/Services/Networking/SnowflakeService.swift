@@ -257,6 +257,176 @@ class SnowflakeService {
         return strategy
     }
 
+    // MARK: - Canadian NOC Integration (Hybrid Approach)
+
+    /// Enrich a single O*NET occupation with Canadian NOC context
+    /// - Parameter onetCode: O*NET SOC code (e.g., "15-1252.00")
+    /// - Returns: Canadian occupation data with NOC mapping, or nil if no mapping exists
+    func getCanadianOccupation(onetCode: String) async throws -> CanadianOccupation? {
+        let sql = """
+        SELECT
+            cfv.ONET_SOC_CODE AS onetCode,
+            cfv.JOB_TITLE AS onetTitle,
+            c.NOC_CODE AS nocCode,
+            n.TITLE_EN AS canadianTitle,
+            n.TITLE_FR AS canadianTitleFr,
+            n.DESCRIPTION_EN AS description,
+            n.DESCRIPTION_FR AS descriptionFr,
+            n.HOLLAND_CODE_1 || n.HOLLAND_CODE_2 || COALESCE(n.HOLLAND_CODE_3, '') AS hollandCodes,
+            n.EMPLOYMENT_REQUIREMENTS_EN AS requirements,
+            n.EMPLOYMENT_REQUIREMENTS_FR AS requirementsFr,
+            n.EXAMPLE_TITLES_EN AS exampleTitles,
+            n.EXAMPLE_TITLES_FR AS exampleTitlesFr,
+            n.MAIN_DUTIES_EN AS duties,
+            n.MAIN_DUTIES_FR AS dutiesFr,
+            c.MAPPING_CONFIDENCE AS confidence
+        FROM \(database).\(schema).CAREER_FULL_VECTORS cfv
+        LEFT JOIN \(database).\(schema).NOC_ONET_CROSSWALK c ON cfv.ONET_SOC_CODE = c.ONET_CODE
+        LEFT JOIN \(database).\(schema).NOC_OCCUPATIONS n ON c.NOC_CODE = SUBSTRING(n.NOC_CODE, 1, 5)
+        WHERE cfv.ONET_SOC_CODE = '\(onetCode)'
+        """
+
+        print("🇨🇦 Fetching Canadian occupation data for: \(onetCode)")
+
+        let response = try await executeSQLStatement(sql)
+
+        guard let data = response["data"] as? [[String?]],
+              let firstRow = data.first else {
+            return nil
+        }
+
+        // Parse row manually (columns in order from SELECT)
+        guard firstRow.count >= 15,
+              let onetCode = firstRow[0],
+              let onetTitle = firstRow[1] else {
+            return nil
+        }
+
+        let canadianOccupation = CanadianOccupation(
+            onetCode: onetCode,
+            onetTitle: onetTitle,
+            nocCode: firstRow[2],
+            canadianTitle: firstRow[3],
+            canadianTitleFr: firstRow[4],
+            description: firstRow[5],
+            descriptionFr: firstRow[6],
+            hollandCodes: firstRow[7],
+            requirements: firstRow[8],
+            requirementsFr: firstRow[9],
+            exampleTitles: firstRow[10],
+            exampleTitlesFr: firstRow[11],
+            duties: firstRow[12],
+            dutiesFr: firstRow[13],
+            mappingConfidence: firstRow[14]
+        )
+
+        if canadianOccupation.hasCanadianMapping {
+            print("✅ Found Canadian mapping: NOC \(canadianOccupation.nocCode ?? "") - \(canadianOccupation.canadianTitle ?? "")")
+        } else {
+            print("ℹ️ No Canadian mapping available for \(onetCode)")
+        }
+
+        return canadianOccupation
+    }
+
+    /// Enrich multiple O*NET occupations with Canadian NOC context (batch operation)
+    /// - Parameter onetCodes: Array of O*NET SOC codes
+    /// - Returns: Dictionary mapping O*NET code to Canadian occupation data
+    func getCanadianOccupations(onetCodes: [String]) async throws -> [String: CanadianOccupation] {
+        guard !onetCodes.isEmpty else { return [:] }
+
+        // Build IN clause for SQL query
+        let codesString = onetCodes.map { "'\($0)'" }.joined(separator: ", ")
+
+        let sql = """
+        SELECT
+            cfv.ONET_SOC_CODE AS onetCode,
+            cfv.JOB_TITLE AS onetTitle,
+            c.NOC_CODE AS nocCode,
+            n.TITLE_EN AS canadianTitle,
+            n.TITLE_FR AS canadianTitleFr,
+            n.DESCRIPTION_EN AS description,
+            n.DESCRIPTION_FR AS descriptionFr,
+            n.HOLLAND_CODE_1 || n.HOLLAND_CODE_2 || COALESCE(n.HOLLAND_CODE_3, '') AS hollandCodes,
+            n.EMPLOYMENT_REQUIREMENTS_EN AS requirements,
+            n.EMPLOYMENT_REQUIREMENTS_FR AS requirementsFr,
+            n.EXAMPLE_TITLES_EN AS exampleTitles,
+            n.EXAMPLE_TITLES_FR AS exampleTitlesFr,
+            n.MAIN_DUTIES_EN AS duties,
+            n.MAIN_DUTIES_FR AS dutiesFr,
+            c.MAPPING_CONFIDENCE AS confidence
+        FROM \(database).\(schema).CAREER_FULL_VECTORS cfv
+        LEFT JOIN \(database).\(schema).NOC_ONET_CROSSWALK c ON cfv.ONET_SOC_CODE = c.ONET_CODE
+        LEFT JOIN \(database).\(schema).NOC_OCCUPATIONS n ON c.NOC_CODE = SUBSTRING(n.NOC_CODE, 1, 5)
+        WHERE cfv.ONET_SOC_CODE IN (\(codesString))
+        """
+
+        print("🇨🇦 Fetching Canadian occupation data for \(onetCodes.count) careers...")
+
+        let response = try await executeSQLStatement(sql)
+
+        guard let data = response["data"] as? [[String?]] else {
+            return [:]
+        }
+
+        var result: [String: CanadianOccupation] = [:]
+
+        for row in data {
+            guard row.count >= 15,
+                  let onetCode = row[0],
+                  let onetTitle = row[1] else {
+                continue
+            }
+
+            let canadianOccupation = CanadianOccupation(
+                onetCode: onetCode,
+                onetTitle: onetTitle,
+                nocCode: row[2],
+                canadianTitle: row[3],
+                canadianTitleFr: row[4],
+                description: row[5],
+                descriptionFr: row[6],
+                hollandCodes: row[7],
+                requirements: row[8],
+                requirementsFr: row[9],
+                exampleTitles: row[10],
+                exampleTitlesFr: row[11],
+                duties: row[12],
+                dutiesFr: row[13],
+                mappingConfidence: row[14]
+            )
+
+            result[onetCode] = canadianOccupation
+        }
+
+        let mappedCount = result.values.filter { $0.hasCanadianMapping }.count
+        print("✅ Found \(mappedCount)/\(onetCodes.count) Canadian mappings")
+
+        return result
+    }
+
+    /// Check if an O*NET occupation has Canadian NOC mapping (quick check)
+    /// - Parameter onetCode: O*NET SOC code
+    /// - Returns: True if Canadian mapping exists
+    func hasCanadianMapping(onetCode: String) async throws -> Bool {
+        let sql = """
+        SELECT COUNT(*) AS count
+        FROM \(database).\(schema).NOC_ONET_CROSSWALK
+        WHERE ONET_CODE = '\(onetCode)'
+        """
+
+        let response = try await executeSQLStatement(sql)
+
+        guard let data = response["data"] as? [[String]],
+              let firstRow = data.first,
+              let countStr = firstRow.first,
+              let count = Int(countStr) else {
+            return false
+        }
+
+        return count > 0
+    }
+
     // MARK: - Private Methods
 
     /// Generate JWT token for Snowflake key-pair authentication

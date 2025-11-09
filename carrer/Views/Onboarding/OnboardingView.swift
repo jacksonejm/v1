@@ -1,5 +1,43 @@
 import SwiftUI
 
+struct SelectionCard<Content: View>: View {
+    let isSelected: Bool
+    private let content: (Bool) -> Content
+
+    init(isSelected: Bool, @ViewBuilder content: @escaping (Bool) -> Content) {
+        self.isSelected = isSelected
+        self.content = content
+    }
+
+    var body: some View {
+        content(isSelected)
+            .padding(.vertical, 18)
+            .padding(.horizontal, Spacing.large)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                    .fill(AppColors.surfaceSecondary.opacity(0.75))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                    .fill(AppGradient.hero)
+                    .opacity(isSelected ? 1 : 0)
+                    .allowsHitTesting(false)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                    .stroke(isSelected ? Color.white.opacity(0.6) : Color.clear, lineWidth: 1)
+            )
+            .shadow(
+                color: isSelected ? AppShadow.subtle : Color.clear,
+                radius: isSelected ? 16 : 0,
+                x: 0,
+                y: isSelected ? 12 : 0
+            )
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
 struct OnboardingView: View {
     @ObservedObject var viewModel: AppViewModel
     let step: OnboardingStep
@@ -15,121 +53,225 @@ struct OnboardingView: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // ───────────────────────────────────────────────────────────
-                // 1) Main onboarding content
-                VStack(alignment: .leading, spacing: 0) {
-                    // Navigation bar
-                    if showNavigationBar {
-                        navigationBar
-                    }
-                    
-                    // Title
-                    if !stepTitle.isEmpty {
-                        Text(stepTitle)
-                            .font(.system(size: 24, weight: .regular))
-                            .foregroundColor(.primary)
-                            .multilineTextAlignment(.leading)
-                            .padding(.top, 24)
-                    }
-                    
-                    // Step content
-                    VStack(alignment: .leading, spacing: 10) {
+        ZStack(alignment: .bottomTrailing) {
+            AppGradient.background
+                .ignoresSafeArea()
+
+            VStack(spacing: Spacing.large) {
+                topSection
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: Spacing.large) {
                         stepContent
                     }
-                    .padding(.top, 8) // Reduced from 20pt to 8pt to match Apple HIG
-                    
-                    Spacer()
-                    
-                    // ───────────────────────────────────────────────────────────
-                    // 2) Help Button (presents AI Assistant as a sheet)
-                    if shouldShowHelpButton {
-                        Button {
-                            presentAIAssistant()
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "ellipsis")
-                                    .font(.system(size: 18))
-                                Text("Assistant")
-                                    .font(.system(size: 16, weight: .medium))
-                            }
-                            .foregroundColor(AppColors.primary)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(20)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.bottom, 12)
-                        .accessibilityLabel("AI Assistant")
-                        .accessibilityHint("Get help with this step from the AI assistant")
-                    }
-                    
-                    // ───────────────────────────────────────────────────────────
-                    // 3) Next Button
-                    if showNextButton {
-                        Button {
-                            navigateToNextStep()
-                        } label: {
-                            Text(nextButtonTitle)
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(isNextButtonDisabled ? Color.gray : AppColors.primary)
-                                .cornerRadius(25)
-                        }
-                        .disabled(isNextButtonDisabled)
-                        .sheet(isPresented: $showAccountCreationPrompt) {
-                            AccountCreationPromptView(viewModel: viewModel)
-                                .presentationDetents([.fraction(0.35)])
-                        }
-                    }
+                    .modernCard()
+                    .padding(.bottom, Spacing.large)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-                
-                // ───────────────────────────────────────────────────────────
-                // 4) Network status indicator (when offline)
-                if !NetworkMonitor.shared.isConnected {
-                    VStack {
-                        HStack {
-                            Image(systemName: "wifi.slash")
-                                .foregroundColor(.white)
-                            Text("Offline Mode")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.red.opacity(0.8))
-                        .cornerRadius(12)
-                        .shadow(radius: 2)
-                        
-                        Spacer()
-                    }
-                    .padding(.top, 4)
-                    .animation(.easeInOut, value: NetworkMonitor.shared.isConnected)
+
+                if showNextButton {
+                    primaryActionButton
                 }
             }
-            .fullScreenCover(isPresented: $showAIAssistant) {
-                AIAssistantOverlay(
-                    viewModel: aiAssistantViewModel,
-                    isPresented: $showAIAssistant,
-                    currentStep: step
-                )
-            }
-            .onChange(of: step) { newStep in
-                // Update assistant context when step changes
-                if showAIAssistant {
-                    aiAssistantViewModel.initialize(for: newStep)
-                }
+            .padding(.horizontal, 24)
+            .padding(.top, 32)
+            .padding(.bottom, showNextButton ? 110 : 56)
+
+            if shouldShowHelpButton {
+                assistantFab
             }
         }
+        .overlay(alignment: .top) {
+            if !NetworkMonitor.shared.isConnected {
+                offlineBanner
+                    .padding(.top, 8)
+            }
+        }
+        .fullScreenCover(isPresented: $showAIAssistant) {
+            AIAssistantOverlay(
+                viewModel: aiAssistantViewModel,
+                isPresented: $showAIAssistant,
+                currentStep: step
+            )
+        }
+        .onChange(of: step) { newStep in
+            if showAIAssistant {
+                aiAssistantViewModel.initialize(for: newStep)
+            }
+        }
+        .sheet(isPresented: $showAccountCreationPrompt) {
+            AccountCreationPromptView(viewModel: viewModel)
+                .presentationDetents([.fraction(0.35)])
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
-    
+
+    private var topSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
+            if showNavigationBar {
+                navigationBar
+            }
+
+            if !stepTitle.isEmpty {
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
+                        Text(stepTitle)
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundColor(AppColors.textPrimary)
+
+                        if !stepSubtitle.isEmpty {
+                            Text(stepSubtitle)
+                                .font(.system(size: 15))
+                                .foregroundColor(AppColors.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+
+                    Spacer()
+
+                    Text(stepPositionText)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
+                        .padding(.horizontal, Spacing.small)
+                        .padding(.vertical, 6)
+                        .background(AppColors.surfaceSecondary.opacity(0.6))
+                        .clipShape(Capsule())
+                }
+            }
+
+            progressIndicator
+        }
+    }
+
+    private var progressIndicator: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(AppColors.surfaceSecondary.opacity(0.65))
+                    .frame(height: 10)
+
+                Capsule()
+                    .fill(AppGradient.hero)
+                    .frame(width: max(12, geometry.size.width * stepProgress), height: 10)
+            }
+        }
+        .frame(height: 10)
+    }
+
+    private var primaryActionButton: some View {
+        Button(action: navigateToNextStep) {
+            HStack {
+                Text(nextButtonTitle)
+                    .font(.system(size: 18, weight: .semibold))
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 16, weight: .semibold))
+            }
+            .foregroundColor(.white)
+            .padding(.vertical, 18)
+            .padding(.horizontal, Spacing.xl)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.pill, style: .continuous)
+                    .fill(AppGradient.hero)
+            )
+            .opacity(isNextButtonDisabled ? 0.45 : 1)
+        }
+        .buttonStyle(.plain)
+        .disabled(isNextButtonDisabled)
+    }
+
+    private var assistantFab: some View {
+        Button(action: presentAIAssistant) {
+            HStack(spacing: Spacing.small) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 18, weight: .bold))
+                Text("Need a hand?")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 16)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(AppColors.accentPurple)
+            )
+            .shadow(color: AppColors.accentPurple.opacity(0.4), radius: 12, x: 0, y: 8)
+        }
+        .buttonStyle(.plain)
+        .padding(.trailing, 24)
+        .padding(.bottom, 24)
+    }
+
+    private var offlineBanner: some View {
+        HStack(spacing: Spacing.small) {
+            Image(systemName: "wifi.slash")
+                .foregroundColor(.white)
+                .font(.system(size: 14, weight: .bold))
+            Text("Offline – we’ll sync when you reconnect")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            Capsule(style: .continuous)
+                .fill(Color.red.opacity(0.8))
+        )
+        .shadow(color: Color.red.opacity(0.35), radius: 8, x: 0, y: 6)
+    }
+
+    private var stepProgress: CGFloat {
+        let steps = OnboardingStep.allCases
+        guard let index = steps.firstIndex(where: { $0.matchesWithoutData(step) }),
+              !steps.isEmpty else {
+            return 0
+        }
+        return CGFloat(index + 1) / CGFloat(steps.count)
+    }
+
+    private var stepPositionText: String {
+        let steps = OnboardingStep.allCases
+        guard let index = steps.firstIndex(where: { $0.matchesWithoutData(step) }),
+              !steps.isEmpty else {
+            return "Step 1 of 1"
+        }
+        return "Step \(index + 1) of \(steps.count)"
+    }
+
+    private var stepSubtitle: String {
+        switch step {
+        case .howDidYouHearAboutUs:
+            return "We use this to understand how students discover MyPath."
+        case .countrySelection:
+            return "We’ll tailor resources and job data to your location."
+        case .getName:
+            return "Personalize your plan with your preferred name."
+        case .welcomeMessage:
+            return "A quick tour before we dive into your interests."
+        case .currentStatus:
+            return "Pick the option that best describes where you are today."
+        case .studentLevel:
+            return "Match recommendations to your grade or program."
+        case .motivationalMessage:
+            return "Take a breath—your coach is cheering you on."
+        case .interests:
+            return "Choose up to five statements that resonate with you."
+        case .riasecQuestions:
+            return "Rate each statement from strongly disagree to strongly agree."
+        case .favoriteSubjects:
+            return "Highlight the classes that energize you most." 
+        case .extracurriculars:
+            return "Tell us how you spend time outside of class." 
+        case .careerInterests:
+            return "Select the roles you’re curious to explore."
+        case .workValues:
+            return "Rank the values that matter most in your future work."
+        case .loadingScreen:
+            return "We’re crunching the numbers with your new inputs."
+        case .completionScreen:
+            return "You’re all set—let’s review your matches."
+        }
+    }
+
     // Method to present AI Assistant safely
     func presentAIAssistant() {
         // Initialize the chat with contextual information before showing the overlay
@@ -214,6 +356,8 @@ struct OnboardingView: View {
         switch step {
         case .howDidYouHearAboutUs:
             return "referral"
+        case .countrySelection:
+            return "country"
         case .getName:
             return "name"
         case .welcomeMessage:
@@ -244,26 +388,26 @@ struct OnboardingView: View {
     }
     
     private var navigationBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.large) {
             BackButton(viewModel: viewModel)
                 .frame(width: 32, height: 32)
-            
-            ProgressBar(currentStep: determineCurrentStep(for: step), totalSteps: 18)
-            
+
             Spacer()
-            
-            // Switch to conversation button
+
             Menu {
                 Button(action: { switchToConversation() }) {
                     Label("Switch to AI Chat", systemImage: "bubble.left.and.bubble.right")
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(.blue)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(AppColors.textSecondary)
+                    .padding(12)
+                    .background(AppColors.surfaceSecondary.opacity(0.5))
+                    .clipShape(Circle())
             }
         }
-        .padding(.top)
+        .padding(.top, 4)
     }
     
     // Determine whether to show help button based on the step
@@ -281,7 +425,10 @@ struct OnboardingView: View {
         switch step {
         case .howDidYouHearAboutUs:
             return viewModel.userData[.howDidYouHearAboutUs] == nil
-            
+
+        case .countrySelection:
+            return viewModel.userData[.country] == nil
+
         case .getName:
             return (viewModel.userData[.name] as? String)?.isEmpty ?? true
             
@@ -372,6 +519,8 @@ struct OnboardingView: View {
         switch step {
         case .howDidYouHearAboutUs:
             return "Welcome! How Did You Hear About Us?"
+        case .countrySelection:
+            return "Where Are You Located?"
         case .getName:
             return "Let's Get to Know You"
         case .welcomeMessage(let name):
@@ -406,6 +555,8 @@ struct OnboardingView: View {
         switch step {
         case .howDidYouHearAboutUs:
             HowDidYouHearAboutUsView(viewModel: viewModel)
+        case .countrySelection:
+            CountrySelectionView(viewModel: viewModel)
         case .getName:
             GetNameView(viewModel: viewModel)
         case .welcomeMessage(let name):
@@ -438,20 +589,21 @@ struct OnboardingView: View {
     private func determineCurrentStep(for step: OnboardingStep) -> Int {
         switch step {
         case .howDidYouHearAboutUs: return 1
-        case .getName: return 2
-        case .welcomeMessage: return 3
-        case .currentStatus: return 4
-        case .studentLevel: return 5
-        case .motivationalMessage: return 6
-        case .interests: return 7
+        case .countrySelection: return 2
+        case .getName: return 3
+        case .welcomeMessage: return 4
+        case .currentStatus: return 5
+        case .studentLevel: return 6
+        case .motivationalMessage: return 7
+        case .interests: return 8
         case .riasecQuestions(let dimension):
-            return 8 + RIASECDimension.allCases.firstIndex(of: dimension)!
-        case .favoriteSubjects: return 14
-        case .extracurriculars: return 15
-        case .careerInterests: return 16
-        case .workValues: return 17
-        case .loadingScreen: return 18
-        case .completionScreen: return 19
+            return 9 + RIASECDimension.allCases.firstIndex(of: dimension)!
+        case .favoriteSubjects: return 15
+        case .extracurriculars: return 16
+        case .careerInterests: return 17
+        case .workValues: return 18
+        case .loadingScreen: return 19
+        case .completionScreen: return 20
         }
     }
     
@@ -625,8 +777,10 @@ struct BackButton: View {
     // Simplified local version to avoid circular dependencies
     private func calculatePreviousStepLocally(from currentStep: OnboardingStep) -> OnboardingStep? {
         switch currentStep {
-        case .getName:
+        case .countrySelection:
             return .howDidYouHearAboutUs
+        case .getName:
+            return .countrySelection
         case .howDidYouHearAboutUs:
             return nil // Indicates return to welcome
         case .riasecQuestions(let dimension):
@@ -650,42 +804,6 @@ struct BackButton: View {
             // For other steps, we don't need exact calculation since we just want
             // to know if it returns to welcome, which only happens with .howDidYouHearAboutUs
             return .howDidYouHearAboutUs // Default non-nil value for other steps
-        }
-    }
-}
-
-// MARK: - Progress Bar
-struct ProgressBar: View {
-    let currentStep: Int
-    let totalSteps: Int
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background track
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 6)
-                        .cornerRadius(3)
-                    
-                    // Filled progress
-                    Rectangle()
-                        .fill(AppColors.primary)
-                        .frame(width: geometry.size.width * CGFloat(currentStep) / CGFloat(totalSteps), height: 6)
-                        .cornerRadius(3)
-                }
-            }
-            .frame(height: 6)
-            
-            HStack {
-                Text("Step \(currentStep) of \(totalSteps)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
-                Spacer()
-            }
         }
     }
 }
@@ -791,6 +909,72 @@ struct HowDidYouHearAboutUsView: View {
                     selection = "Other"
                     otherText = savedValue
                 }
+            }
+        }
+    }
+}
+
+struct CountrySelectionView: View {
+    @ObservedObject var viewModel: AppViewModel
+    @State private var selectedCountry: UserCountry?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.large) {
+            Text("This helps us tailor labor market data, salaries, and education paths for your region.")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.textSecondary)
+
+            VStack(spacing: Spacing.medium) {
+                ForEach(UserCountry.allCases) { country in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedCountry = country
+                            viewModel.userCountry = country
+                            viewModel.userData[.country] = country
+                        }
+                    }) {
+                        SelectionCard(isSelected: selectedCountry == country) { isSelected in
+                            HStack(spacing: Spacing.large) {
+                                Text(country.flag)
+                                    .font(.system(size: 34))
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(country.rawValue)
+                                        .font(.system(size: 17, weight: .semibold))
+                                        .foregroundColor(isSelected ? .white : AppColors.textPrimary)
+
+                                    if country.usesNOC {
+                                        Text("Includes Canadian NOC guidance")
+                                            .font(.system(size: 13, weight: .medium))
+                                            .foregroundColor(isSelected ? .white.opacity(0.85) : AppColors.textSecondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                if isSelected {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .shadow(color: .white.opacity(0.35), radius: 6, x: 0, y: 3)
+                                }
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
+        .onAppear {
+            // Load existing selection if available
+            if let savedCountry = viewModel.userData[.country] as? UserCountry {
+                selectedCountry = savedCountry
+            } else {
+                // Default to user's current country
+                selectedCountry = viewModel.userCountry
             }
         }
     }

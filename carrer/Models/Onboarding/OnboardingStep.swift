@@ -2,6 +2,7 @@ import Foundation
 
 enum OnboardingStep: Hashable, CaseIterable, Identifiable {
     case howDidYouHearAboutUs
+    case countrySelection
     case getName
     case welcomeMessage(name: String)
     case currentStatus
@@ -19,6 +20,7 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
     static var allCases: [OnboardingStep] {
         return [
             .howDidYouHearAboutUs,
+            .countrySelection,
             .getName,
             .welcomeMessage(name: ""),
             .currentStatus,
@@ -42,6 +44,7 @@ enum OnboardingStep: Hashable, CaseIterable, Identifiable {
     func matchesWithoutData(_ other: OnboardingStep) -> Bool {
         switch (self, other) {
         case (.howDidYouHearAboutUs, .howDidYouHearAboutUs),
+             (.countrySelection, .countrySelection),
              (.getName, .getName),
              (.welcomeMessage, .welcomeMessage),
              (.currentStatus, .currentStatus),

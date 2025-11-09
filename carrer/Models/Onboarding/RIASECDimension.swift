@@ -1,6 +1,6 @@
 import Foundation
 
-enum RIASECDimension: String, CaseIterable {
+enum RIASECDimension: String, CaseIterable, Codable, Hashable {
     case realistic = "Realistic"
     case investigative = "Investigative"
     case artistic = "Artistic"

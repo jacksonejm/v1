@@ -7,7 +7,7 @@ class CareerTracksViewModel: ObservableObject {
     @Published var trackedCareers: [CareerTrack] = []
     @Published var skillsData: UserSkillsData = UserSkillsData()
 
-    private let appViewModel: AppViewModel
+    let appViewModel: AppViewModel  // Made internal for Canadian context access
     private let maxActiveTracks = 3
     private let analytics = AnalyticsService.shared
 

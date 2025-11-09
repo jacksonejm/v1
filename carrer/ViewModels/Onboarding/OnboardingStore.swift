@@ -464,6 +464,7 @@ class OnboardingStore: ObservableObject {
     private func getStepKey(for step: OnboardingStep) -> String {
         switch step {
         case .howDidYouHearAboutUs: return "howDidYouHearAboutUs"
+        case .countrySelection: return "countrySelection"
         case .getName: return "getName"
         case .welcomeMessage: return "welcomeMessage"
         case .currentStatus: return "currentStatus"
@@ -485,6 +486,7 @@ class OnboardingStore: ObservableObject {
     private func stepFromKey(_ key: String) -> OnboardingStep? {
         switch key {
         case "howDidYouHearAboutUs": return .howDidYouHearAboutUs
+        case "countrySelection": return .countrySelection
         case "getName": return .getName
         case "welcomeMessage": return .welcomeMessage(name: values[.name] as? String ?? "")
         case "currentStatus": return .currentStatus
@@ -554,6 +556,8 @@ class OnboardingStore: ObservableObject {
         // Default navigation if spec doesn't provide a next step
         switch step {
         case .howDidYouHearAboutUs:
+            return .countrySelection
+        case .countrySelection:
             return .getName
         case .getName:
             let name = values[.name] as? String ?? ""
@@ -599,8 +603,10 @@ class OnboardingStore: ObservableObject {
         switch step {
         case .howDidYouHearAboutUs:
             return .howDidYouHearAboutUs // Stay at first step
-        case .getName:
+        case .countrySelection:
             return .howDidYouHearAboutUs
+        case .getName:
+            return .countrySelection
         case .welcomeMessage:
             return .getName
         case .currentStatus:

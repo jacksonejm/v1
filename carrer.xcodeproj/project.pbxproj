@@ -40,6 +40,9 @@
 		A471EFCC2E9DEA1100F40652 /* OnbDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFCB2E9DEA1100F40652 /* OnbDraftStore.swift */; };
 		A471EFCF2E9DEA4A00F40652 /* RIASECItemBank.json in Resources */ = {isa = PBXBuildFile; fileRef = A471EFCD2E9DEA4A00F40652 /* RIASECItemBank.json */; };
 		A471EFD02E9DEA4A00F40652 /* WorkValuesData.json in Resources */ = {isa = PBXBuildFile; fileRef = A471EFCE2E9DEA4A00F40652 /* WorkValuesData.json */; };
+		A471EFFF2EA3CD6300F40652 /* SnowflakeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFFE2EA3CD6300F40652 /* SnowflakeServiceTests.swift */; };
+		A471F0002EA3CD6300F40652 /* AppViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFFC2EA3CD6300F40652 /* AppViewModelTests.swift */; };
+		A471F0012EA3CD6300F40652 /* CanadianNOCIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A471EFFD2EA3CD6300F40652 /* CanadianNOCIntegrationTests.swift */; };
 		A4AA47A22E95EAE90082C1B5 /* WorkValuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */; };
 		A4AA47A42E95EB700082C1B5 /* CareerSkill.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */; };
 		A4AA47A62E95EB8D0082C1B5 /* JobSearchStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */; };
@@ -165,6 +168,7 @@
 		A4DDE5112CC69A5F00E829E7 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A4DDE5102CC69A5F00E829E7 /* FirebaseCore */; };
 		A4DDE5132CC69A5F00E829E7 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A4DDE5122CC69A5F00E829E7 /* FirebaseFirestore */; };
 		A4DDE5152CC6A80D00E829E7 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A4DDE5142CC6A80D00E829E7 /* GoogleService-Info.plist */; };
+		A4E04F2B2EA49215002060F4 /* StepFieldSpecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A462BB942DDF1ECE004FCB0E /* StepFieldSpecTests.swift */; };
 		B46EC4163AEC7251EFF084C4 /* CareerTracksViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9951E2F2CD1C9B28B2F7AEB3 /* CareerTracksViewModel.swift */; };
 		C2AAE3EC176E74190B7F9689 /* CareerTrackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1721CFD9D92BAF2C97A5ADAB /* CareerTrackModels.swift */; };
 		DA8E57CCDE268EE7CBB4F470 /* SkillAssessmentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E6C4712C42B18C67B368D3 /* SkillAssessmentSheet.swift */; };
@@ -221,6 +225,9 @@
 		A471EFCB2E9DEA1100F40652 /* OnbDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnbDraftStore.swift; sourceTree = "<group>"; };
 		A471EFCD2E9DEA4A00F40652 /* RIASECItemBank.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RIASECItemBank.json; sourceTree = "<group>"; };
 		A471EFCE2E9DEA4A00F40652 /* WorkValuesData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = WorkValuesData.json; sourceTree = "<group>"; };
+		A471EFFC2EA3CD6300F40652 /* AppViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModelTests.swift; sourceTree = "<group>"; };
+		A471EFFD2EA3CD6300F40652 /* CanadianNOCIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanadianNOCIntegrationTests.swift; sourceTree = "<group>"; };
+		A471EFFE2EA3CD6300F40652 /* SnowflakeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnowflakeServiceTests.swift; sourceTree = "<group>"; };
 		A4AA47A12E95EAE90082C1B5 /* WorkValuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkValuesView.swift; sourceTree = "<group>"; };
 		A4AA47A32E95EB700082C1B5 /* CareerSkill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerSkill.swift; sourceTree = "<group>"; };
 		A4AA47A52E95EB8D0082C1B5 /* JobSearchStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobSearchStrategy.swift; sourceTree = "<group>"; };
@@ -893,6 +900,9 @@
 		A4C5A5B02CAF97FC00D187EB /* carrerTests */ = {
 			isa = PBXGroup;
 			children = (
+				A471EFFC2EA3CD6300F40652 /* AppViewModelTests.swift */,
+				A471EFFD2EA3CD6300F40652 /* CanadianNOCIntegrationTests.swift */,
+				A471EFFE2EA3CD6300F40652 /* SnowflakeServiceTests.swift */,
 				A4B520BB2DDF1AFF00B71A54 /* carrerTests.swift */,
 				A462BB942DDF1ECE004FCB0E /* StepFieldSpecTests.swift */,
 			);
@@ -1217,6 +1227,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A471EFFF2EA3CD6300F40652 /* SnowflakeServiceTests.swift in Sources */,
+				A4E04F2B2EA49215002060F4 /* StepFieldSpecTests.swift in Sources */,
+				A471F0002EA3CD6300F40652 /* AppViewModelTests.swift in Sources */,
+				A471F0012EA3CD6300F40652 /* CanadianNOCIntegrationTests.swift in Sources */,
 				A45176512DDF61E400BB9752 /* carrerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1426,6 +1440,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GGDZPR7X8W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
@@ -1444,6 +1459,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GGDZPR7X8W;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 1.0;
