@@ -13,76 +13,134 @@ struct MainAppView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Dashboard tab
             dashboardView
                 .tabItem {
-                    VStack {
-                        Image(systemName: "house.fill")
-                        Text("Home")
-                    }
+                    Image(systemName: "house.fill")
+                    Text("Home")
                 }
                 .tag(0)
-            
-            // Explore tab
+
             exploreView
                 .tabItem {
-                    VStack {
-                        Image(systemName: "magnifyingglass")
-                        Text("Explore")
-                    }
+                    Image(systemName: "magnifyingglass")
+                    Text("Explore")
                 }
                 .tag(1)
-            
-            // AI Coach tab
+
             aiCoachView
                 .tabItem {
-                    VStack {
-                        Image(systemName: "bubble.left.fill")
-                        Text("AI Coach")
-                    }
+                    Image(systemName: "bubble.left.fill")
+                    Text("AI Coach")
                 }
                 .tag(2)
-            
-            // Profile tab
+
             profileView
                 .tabItem {
-                    VStack {
-                        Image(systemName: "person.fill")
-                        Text("Profile")
-                    }
+                    Image(systemName: "person.fill")
+                    Text("Profile")
                 }
                 .tag(3)
         }
         .accentColor(AppColors.primary)
+        .background(AppGradient.background.ignoresSafeArea())
     }
     
     // MARK: - Tab Views
     
     private var dashboardView: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Header section
-                    headerSection
-
-                    // Your tracked careers (planning) - always show with empty state
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: Spacing.xxxl) {
+                    heroHeader
+                    quickActionsStrip
                     yourTrackedCareersSection
-
-                    // Recommended careers section
+                        .modernCard()
                     recommendedCareersSection
-
-                    // Learning resources section
+                        .modernCard()
                     learningResourcesSection
+                        .modernCard()
                 }
-                .padding()
+                .padding(.horizontal, 24)
+                .padding(.vertical, 32)
             }
-            .navigationTitle("My Career Path")
-            .navigationBarTitleDisplayMode(.large)
+            .background(AppGradient.background.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showMatchPercentageInfo) {
                 matchPercentageInfoSheet
             }
         }
         .environmentObject(viewModel)
+    }
+
+    private var heroHeader: some View {
+        VStack(alignment: .leading, spacing: Spacing.large) {
+            Text(greetingTitle)
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundColor(.white)
+
+            Text("Let’s build momentum on your career journey today.")
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(.white.opacity(0.85))
+
+            HStack(spacing: Spacing.large) {
+                progressPill(title: "Tracks Active", value: "\(tracksViewModel.activeTracks.count)")
+                progressPill(title: "Top Match", value: topMatchLabel)
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(Spacing.xxxl)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            AppGradient.hero
+                .mask(
+                    RoundedRectangle(cornerRadius: AppCornerRadius.section, style: .continuous)
+                )
+        )
+        .overlay(alignment: .topTrailing) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 36, weight: .bold))
+                .foregroundColor(.white.opacity(0.35))
+                .padding(Spacing.xl)
+        }
+    }
+
+    private func progressPill(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.6))
+
+            Text(value)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .padding(.vertical, Spacing.small)
+        .padding(.horizontal, Spacing.large)
+        .background(Color.white.opacity(0.12))
+        .clipShape(Capsule())
+    }
+
+    private var greetingTitle: String {
+        if let name = viewModel.userData[.name] as? String, !name.isEmpty {
+            return "Hi, \(name)!"
+        }
+        return "Welcome back"
+    }
+
+    private var topMatchLabel: String {
+        guard let topTrack = viewModel.careerTracks.first else {
+            return "—"
+        }
+        return "\(topTrack.match)%"
+    }
+
+    private var quickActionsStrip: some View {
+        ModernQuickActionsView(
+            viewModel: viewModel,
+            selectedTab: $selectedTab,
+            onShowMatchInfo: { showMatchPercentageInfo = true }
+        )
+        .modernCard()
     }
 
     private var matchPercentageInfoSheet: some View {
@@ -176,23 +234,44 @@ struct MainAppView: View {
     
     private var aiCoachView: some View {
         NavigationStack {
-            VStack {
-                Text("Talk to your AI career coach")
-                    .font(.title)
-                    .padding()
-                
+            VStack(spacing: Spacing.xxxl) {
+                Spacer()
+
+                VStack(spacing: Spacing.large) {
+                    Image(systemName: "bubble.left.and.exclamationmark.bubble.right.fill")
+                        .font(.system(size: 64))
+                        .foregroundColor(AppColors.accentPurple)
+
+                    Text("Talk to your AI career coach")
+                        .font(.system(size: 24, weight: .semibold))
+                        .multilineTextAlignment(.center)
+
+                    Text("Ask for guidance, plan your next steps, or rewrite goals together.")
+                        .font(.system(size: 16))
+                        .foregroundColor(AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 40)
+
                 Button(action: {
                     // Show AI assistant
                 }) {
-                    Label("Start conversation", systemImage: "bubble.left.fill")
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(AppColors.primary)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    HStack(spacing: Spacing.small) {
+                        Image(systemName: "sparkles")
+                        Text("Open Assistant")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .padding(.vertical, 16)
+                    .frame(maxWidth: .infinity)
+                    .background(AppGradient.hero)
+                    .foregroundColor(.white)
+                    .cornerRadius(AppCornerRadius.pill)
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 32)
+
+                Spacer()
             }
+            .background(AppGradient.background.ignoresSafeArea())
             .navigationTitle("AI Coach")
         }
     }
@@ -232,11 +311,11 @@ struct MainAppView: View {
     // MARK: - Dashboard Components
 
     private var yourTrackedCareersSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             HStack {
                 Text("Your Career Tracks")
-                    .font(.title3)
-                    .fontWeight(.bold)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(AppColors.textPrimary)
 
                 Spacer()
 
@@ -244,12 +323,20 @@ struct MainAppView: View {
                     Button(action: {
                         // Navigate to all tracks view (future)
                     }) {
-                        Text("See All")
-                            .font(.subheadline)
+                        Text("See all")
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(AppColors.primary)
+                            .padding(.horizontal, Spacing.large)
+                            .padding(.vertical, Spacing.small)
+                            .background(AppColors.primary.opacity(0.1))
+                            .clipShape(Capsule())
                     }
                 }
             }
+
+            Text("Plan milestone-based steps for the roles you care about most.")
+                .font(.system(size: 14))
+                .foregroundColor(AppColors.textSecondary)
 
             if tracksViewModel.activeTracks.isEmpty {
                 // Empty state
@@ -268,24 +355,24 @@ struct MainAppView: View {
     }
 
     private func emptyTracksCard() -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Spacing.large) {
             Image(systemName: "target")
-                .font(.system(size: 48))
-                .foregroundColor(AppColors.primary.opacity(0.6))
+                .font(.system(size: 52))
+                .foregroundColor(.white)
+                .padding(Spacing.small)
+                .background(Circle().fill(AppColors.primary.opacity(0.25)))
 
-            VStack(spacing: 8) {
-                Text("Start Tracking a Career")
-                    .font(.headline)
-                    .foregroundColor(.primary)
+            VStack(spacing: Spacing.small) {
+                Text("Start tracking a career")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
 
-                Text("Choose from personalized recommendations and build your career action plan")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                Text("Choose a recommendation and we’ll build a plan together.")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 8)
             }
 
-            // CTA Button
             if let firstCareer = viewModel.careerTracks.first {
                 let topMatchIds = MatchBucketing.identifyTopMatches(in: viewModel.careerTracks)
                 let isTopMatch = topMatchIds.contains(firstCareer.id)
@@ -295,49 +382,34 @@ struct MainAppView: View {
                     isTopMatch: isTopMatch,
                     tracksViewModel: tracksViewModel
                 )) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "sparkles")
-                            .font(.subheadline)
-
-                        Text("Browse Recommended Careers")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppColors.primary)
-                    .cornerRadius(12)
+                    Text("Browse recommendations")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(AppColors.primary)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white)
+                        .cornerRadius(AppCornerRadius.pill)
                 }
                 .buttonStyle(.plain)
             } else {
                 Button(action: {
-                    selectedTab = 1  // Navigate to Explore tab
+                    selectedTab = 1
                 }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.subheadline)
-
-                        Text("Explore Careers")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppColors.primary)
-                    .cornerRadius(12)
+                    Text("Explore careers")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(AppColors.primary)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white)
+                        .cornerRadius(AppCornerRadius.pill)
                 }
             }
         }
-        .padding(.vertical, 32)
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.primary.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, dash: [5]))
+        .padding(.vertical, 36)
+        .padding(.horizontal, 28)
+        .background(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .fill(AppGradient.hero)
         )
     }
 
@@ -345,326 +417,132 @@ struct MainAppView: View {
         let topMatchIds = MatchBucketing.identifyTopMatches(in: viewModel.careerTracks)
         let isTopMatch = topMatchIds.contains(track.id)
 
-        return VStack(alignment: .leading, spacing: 12) {
-            // Title and badges
-            VStack(alignment: .leading, spacing: 8) {
-                Text(track.title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .lineLimit(2)
+        return VStack(alignment: .leading, spacing: Spacing.large) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: Spacing.small) {
+                    Text(displayTitle(for: track))
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(AppColors.textPrimary)
+                        .lineLimit(2)
 
-                HStack(spacing: 8) {
-                    if isTopMatch {
-                        TopMatchBadge(size: .small)
-                    } else {
-                        MatchPill(tier: track.matchTier, size: .small)
-                    }
+                    Text("Progress overview")
+                        .font(.system(size: 13))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                Spacer()
+
+                if isTopMatch {
+                    TopMatchBadge(size: .small)
+                } else {
+                    MatchPill(tier: track.matchTier, size: .small)
                 }
             }
 
-            // Progress
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
                 HStack {
-                    Text("Progress")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("\(Int(track.trackProgress * 100))% complete")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
 
                     Spacer()
 
                     Text("\(track.completedTaskCount)/\(track.totalTaskCount) tasks")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(AppColors.primary)
                 }
 
                 GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 6)
-                            .cornerRadius(3)
-
-                        Rectangle()
-                            .fill(AppColors.primary)
-                            .frame(width: geometry.size.width * track.trackProgress, height: 6)
-                            .cornerRadius(3)
-                    }
+                    Capsule()
+                        .fill(AppColors.surfaceVariant.opacity(0.5))
+                        .overlay(alignment: .leading) {
+                            Capsule()
+                                .fill(AppGradient.hero)
+                                .frame(width: geometry.size.width * track.trackProgress)
+                        }
+                        .frame(height: 8)
                 }
-                .frame(height: 6)
+                .frame(height: 8)
             }
 
-            // Next step preview
             if let nextStep = track.nextSteps.first {
-                HStack(spacing: 6) {
+                HStack(spacing: Spacing.small) {
                     Image(systemName: "arrow.right.circle.fill")
-                        .font(.caption)
                         .foregroundColor(AppColors.primary)
+                        .font(.system(size: 16))
 
                     Text("Next: \(nextStep.title)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
                         .lineLimit(1)
                 }
             }
 
-            Spacer()
-
-            // Continue button
             NavigationLink(destination: TrackDetailView(
                 track: track,
                 isTopMatch: isTopMatch,
                 tracksViewModel: tracksViewModel
             )) {
-                HStack {
-                    Text("Continue")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-
-                    Image(systemName: "arrow.right")
-                        .font(.caption)
+                HStack(spacing: Spacing.small) {
+                    Text("Continue plan")
+                        .font(.system(size: 15, weight: .semibold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(AppColors.primary)
-                .cornerRadius(8)
+                .padding(.vertical, 12)
+                .background(AppGradient.hero)
+                .cornerRadius(AppCornerRadius.pill)
             }
             .buttonStyle(.plain)
         }
-        .padding()
-        .frame(width: 260, height: 220)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.primary.opacity(0.3), lineWidth: 1)
+        .padding(Spacing.xl)
+        .frame(width: 280)
+        .background(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .fill(AppColors.surfacePrimary)
+                .shadow(color: AppShadow.subtle, radius: 16, x: 0, y: 14)
         )
     }
 
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Hello, \(userName)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("Your career journey continues")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                // Profile image
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(AppColors.primary)
-            }
-            
-            // Progress card
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Career Readiness")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Text("65%")
-                        .font(.headline)
-                        .foregroundColor(AppColors.primary)
-                }
-                
-                // Progress bar
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 8)
-                            .cornerRadius(4)
-                        
-                        Rectangle()
-                            .fill(AppColors.primary)
-                            .frame(width: geometry.size.width * 0.65, height: 8)
-                            .cornerRadius(4)
-                    }
-                }
-                .frame(height: 8)
-                
-                Text("Complete more activities to increase your score")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
-        }
-    }
-    
-    private var careerTracksSection: some View {
-        let topMatchIds = MatchBucketing.identifyTopMatches(in: viewModel.careerTracks)
-        let sortedTracks = sortCareersByTier(viewModel.careerTracks, topMatchIds: topMatchIds)
-
-        return VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Your Career Tracks")
-                    .font(.title3)
-                    .fontWeight(.bold)
-
-                Spacer()
-
-                Button(action: {}) {
-                    Text("See All")
-                        .font(.subheadline)
-                        .foregroundColor(AppColors.primary)
-                }
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(sortedTracks) { track in
-                        careerTrackCard(track, isTopMatch: topMatchIds.contains(track.id))
-                    }
-
-                    if viewModel.careerTracks.isEmpty {
-                        // Empty state
-                        careerTrackEmptyCard()
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-        }
-    }
-    
-    private func careerTrackCard(_ track: CareerTrack, isTopMatch: Bool) -> some View {
-        NavigationLink(destination: ONetCareerDetailView(
-            careerTrack: track,
-            isTopMatch: isTopMatch,
-            tracksViewModel: tracksViewModel
-        )) {
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(track.title)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                            .lineLimit(2)
-
-                        Spacer()
-
-                        // O*NET badge if available
-                        if track.hasONetData {
-                            Image(systemName: "checkmark.seal.fill")
-                                .font(.caption)
-                                .foregroundColor(AppColors.primary)
-                        }
-                    }
-
-                    if let riasecMatch = track.riasecMatch {
-                        Text(riasecMatch)
-                            .font(.caption)
-                            .foregroundColor(AppColors.primary)
-                    } else {
-                        Text("Progress: \(track.progress)%")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                // Progress bar (only show if no O*NET data)
-                if !track.hasONetData {
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(height: 6)
-                                .cornerRadius(3)
-
-                            Rectangle()
-                                .fill(AppColors.primary)
-                                .frame(width: geometry.size.width * CGFloat(track.progress) / 100, height: 6)
-                                .cornerRadius(3)
-                        }
-                    }
-                    .frame(height: 6)
-                }
-
-                HStack(spacing: 8) {
-                    // Match badge - show top match or match tier
-                    if isTopMatch {
-                        TopMatchBadge(size: .small)
-                    } else {
-                        MatchPill(tier: track.matchTier, size: .small)
-                    }
-
-                    Spacer()
-
-                    // Tap indicator
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding()
-            .frame(width: 240)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    private func careerTrackEmptyCard() -> some View {
-        VStack(alignment: .center, spacing: 12) {
-            Image(systemName: "plus.circle")
-                .font(.system(size: 36))
-                .foregroundColor(AppColors.primary)
-            
-            Text("Add Career Track")
-                .font(.headline)
-                .foregroundColor(AppColors.primary)
-            
-            Text("Start tracking a career path")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
-        .frame(width: 200, height: 160)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
-    }
-    
     private var recommendedCareersSection: some View {
         let topMatchIds = MatchBucketing.identifyTopMatches(in: viewModel.careerTracks)
         let sortedTracks = sortCareersByTier(viewModel.careerTracks, topMatchIds: topMatchIds)
 
-        return VStack(alignment: .leading, spacing: 16) {
+        return VStack(alignment: .leading, spacing: Spacing.large) {
             HStack {
                 Text("Recommended For You")
-                    .font(.title3)
-                    .fontWeight(.bold)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(AppColors.textPrimary)
 
                 Button(action: {
                     showMatchPercentageInfo = true
                 }) {
                     Image(systemName: "info.circle")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
                 }
 
                 Spacer()
 
                 NavigationLink(destination: AllRecommendationsView(viewModel: viewModel)) {
-                    Text("See All")
-                        .font(.subheadline)
+                    Text("See all")
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(AppColors.primary)
+                        .padding(.horizontal, Spacing.large)
+                        .padding(.vertical, Spacing.small)
+                        .background(AppColors.primary.opacity(0.1))
+                        .clipShape(Capsule())
                 }
             }
 
-            // Recommended careers list - show O*NET careers from Snowflake
-            VStack(spacing: 12) {
-                ForEach(Array(sortedTracks.prefix(3))) { track in
+            Text("Refreshed whenever you update interests, work values, or activities.")
+                .font(.system(size: 14))
+                .foregroundColor(AppColors.textSecondary)
+
+            VStack(spacing: Spacing.small) {
+                ForEach(Array(sortedTracks.prefix(3).enumerated()), id: \.element.id) { index, track in
                     let isTop = topMatchIds.contains(track.id)
                     NavigationLink(destination: ONetCareerDetailView(
                         careerTrack: track,
@@ -678,68 +556,85 @@ struct MainAppView: View {
 
                 // Fallback to empty state if no careers
                 if viewModel.careerTracks.isEmpty {
-                    Text("Complete your profile to get personalized recommendations")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding()
+                    Text("Complete onboarding to unlock personalized matches.")
+                        .font(.system(size: 14))
+                        .foregroundColor(AppColors.textSecondary)
+                        .padding(.vertical, Spacing.medium)
                         .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                                .fill(AppColors.surfaceSecondary.opacity(0.6))
+                        )
                 }
             }
         }
     }
 
     private func recommendedCareerRow(track: CareerTrack, isTopMatch: Bool) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(track.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+        HStack(alignment: .center, spacing: Spacing.large) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                HStack(spacing: Spacing.small) {
+                    Text(displayTitle(for: track))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColors.textPrimary)
 
-                    // O*NET badge
                     if track.hasONetData {
                         Image(systemName: "checkmark.seal.fill")
-                            .font(.caption)
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(AppColors.primary)
                     }
                 }
 
-                Text("Based on your interests and skills")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text("Matches your interests and skills")
+                    .font(.system(size: 13))
+                    .foregroundColor(AppColors.textSecondary)
             }
 
             Spacer()
 
-            // Show top match or match tier badge
-            if isTopMatch {
-                TopMatchBadge(size: .small)
-            } else {
-                MatchPill(tier: track.matchTier, size: .small)
+            VStack(alignment: .trailing, spacing: 6) {
+                Text("\(track.match)%")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(AppColors.textPrimary)
+
+                if isTopMatch {
+                    TopMatchBadge(size: .small)
+                } else {
+                    MatchPill(tier: track.matchTier, size: .small)
+                }
             }
         }
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.vertical, Spacing.medium)
+        .padding(.horizontal, Spacing.large)
+        .background(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .fill(AppColors.surfaceSecondary.opacity(0.65))
+        )
     }
     
     private var learningResourcesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             HStack {
                 Text("Learning Resources")
-                    .font(.title3)
-                    .fontWeight(.bold)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(AppColors.textPrimary)
                 
                 Spacer()
                 
                 Button(action: {}) {
-                    Text("See All")
-                        .font(.subheadline)
+                    Text("See all")
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(AppColors.primary)
+                        .padding(.horizontal, Spacing.large)
+                        .padding(.vertical, Spacing.small)
+                        .background(AppColors.primary.opacity(0.1))
+                        .clipShape(Capsule())
                 }
             }
+            
+            Text("Short, curated lessons to close gaps and build career confidence.")
+                .font(.system(size: 14))
+                .foregroundColor(AppColors.textSecondary)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -767,37 +662,40 @@ struct MainAppView: View {
     }
     
     private func resourceCard(title: String, type: String, duration: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: "book.fill")
-                .font(.system(size: 36))
-                .foregroundColor(AppColors.primary.opacity(0.8))
-                .padding(.bottom, 4)
-            
+        VStack(alignment: .leading, spacing: Spacing.medium) {
+            Image(systemName: "book.closed.fill")
+                .font(.system(size: 32))
+                .foregroundColor(AppColors.accentPurple)
+
             Text(title)
-                .font(.headline)
-                .foregroundColor(.primary)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(AppColors.textPrimary)
                 .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-            
+
+            Spacer(minLength: 0)
+
             HStack {
                 Text(type)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(AppColors.primary.opacity(0.1))
-                    .cornerRadius(4)
-                
+                    .font(.system(size: 12, weight: .medium))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AppColors.accentPurple.opacity(0.12))
+                    .foregroundColor(AppColors.accentPurple)
+                    .clipShape(Capsule())
+
                 Spacer()
-                
+
                 Text(duration)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(AppColors.textSecondary)
             }
         }
-        .padding()
-        .frame(width: 200, height: 160)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .padding(Spacing.large)
+        .frame(width: 200, height: 170)
+        .background(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .fill(AppColors.surfaceSecondary.opacity(0.7))
+        )
     }
     
     // MARK: - Helper Properties
@@ -837,6 +735,108 @@ struct MainAppView: View {
 
             // Within same tier, sort by score descending
             return first.match > second.match
+        }
+    }
+
+    // MARK: - Display Helpers
+
+    /// Get display title for a career (prefers Canadian title when available)
+    private func displayTitle(for track: CareerTrack) -> String {
+        // Check if user is Canadian and if we have Canadian data
+        if viewModel.userCountry.usesNOC,
+           let onetCode = track.onetCode,
+           let canadianOcc = viewModel.canadianOccupationData[onetCode],
+           let canadianTitle = canadianOcc.canadianTitle {
+            return canadianTitle
+        }
+        return track.title
+    }
+}
+
+// MARK: - Supporting Components
+
+struct ModernQuickActionsView: View {
+    @ObservedObject var viewModel: AppViewModel
+    @Binding var selectedTab: Int
+    var onShowMatchInfo: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.large) {
+            Text("Jump back in")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(AppColors.textPrimary)
+
+            Text("Pick up where you left off or refresh your matches with one tap.")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.textSecondary)
+
+            VStack(spacing: Spacing.small) {
+                quickActionButton(
+                    icon: "arrow.triangle.2.circlepath",
+                    title: "Refresh matches",
+                    subtitle: "Update recommendations",
+                    action: refreshMatches
+                )
+
+                quickActionButton(
+                    icon: "list.bullet.rectangle",
+                    title: "Manage tracks",
+                    subtitle: "Plan next milestones",
+                    action: { selectedTab = 1 }
+                )
+
+                quickActionButton(
+                    icon: "chart.pie.fill",
+                    title: "How we score",
+                    subtitle: "Understand your match %",
+                    action: onShowMatchInfo
+                )
+            }
+        }
+    }
+
+    private func quickActionButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.large) {
+                ZStack {
+                    Circle()
+                        .fill(AppColors.surfaceSecondary)
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(AppColors.primary)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Text(subtitle)
+                        .font(.system(size: 14))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(AppColors.textTertiary)
+            }
+            .padding(.vertical, Spacing.small)
+            .padding(.horizontal, Spacing.large)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.pill, style: .continuous)
+                    .fill(AppColors.surfaceSecondary.opacity(0.65))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func refreshMatches() {
+        Task {
+            await viewModel.generateCareerSuggestions()
         }
     }
 }

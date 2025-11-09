@@ -1,0 +1,66 @@
+{
+  "primary": [
+    {
+      "id": "balance",
+      "title": "Work-Life Balance",
+      "description": "Having time for personal life and hobbies"
+    },
+    {
+      "id": "salary",
+      "title": "High Salary",
+      "description": "Earning a substantial income"
+    },
+    {
+      "id": "security",
+      "title": "Job Security",
+      "description": "Stable, long-term employment"
+    },
+    {
+      "id": "helping",
+      "title": "Helping Others",
+      "description": "Making a positive impact on people's lives"
+    },
+    {
+      "id": "creativity",
+      "title": "Creativity & Innovation",
+      "description": "Being creative and trying new approaches"
+    },
+    {
+      "id": "independence",
+      "title": "Independence",
+      "description": "Working autonomously with minimal supervision"
+    },
+    {
+      "id": "recognition",
+      "title": "Recognition",
+      "description": "Receiving praise and awards for your work"
+    },
+    {
+      "id": "learning",
+      "title": "Continuous Learning",
+      "description": "Always learning new skills and knowledge"
+    }
+  ],
+  "additional": [
+    {
+      "id": "leadership",
+      "title": "Leadership Opportunities",
+      "description": "Managing and directing others"
+    },
+    {
+      "id": "variety",
+      "title": "Variety in Tasks",
+      "description": "Doing different things every day"
+    },
+    {
+      "id": "challenge",
+      "title": "Intellectual Challenge",
+      "description": "Solving complex problems"
+    },
+    {
+      "id": "prestige",
+      "title": "Prestige & Status",
+      "description": "Having a respected position in society"
+    }
+  ]
+}

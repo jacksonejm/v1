@@ -11,7 +11,9 @@ class AppViewModel: ObservableObject {
     @Published var favoriteItems: [String] = []
     @Published var careerTracks: [CareerTrack] = []
     @Published var showCompletion: Bool = false
-    
+    @Published var userCountry: UserCountry = .usa  // Default to USA
+    @Published var canadianOccupationData: [String: CanadianOccupation] = [:]  // O*NET code → Canadian occupation
+
     // MARK: - Public Properties
     var onboardingModeManager: OnboardingModeManager?
     
@@ -38,6 +40,8 @@ class AppViewModel: ObservableObject {
         
         switch currentStep {
         case .howDidYouHearAboutUs:
+            nextStep = .countrySelection
+        case .countrySelection:
             nextStep = .getName
         case .getName:
             if let name = userData[.name] as? String, !name.isEmpty {
@@ -168,6 +172,7 @@ class AppViewModel: ObservableObject {
         // Clear all onboarding-related user data
         let onboardingKeys: [UserDataKey] = [
             .howDidYouHearAboutUs,
+            .country,
             .name,
             .personalizeExperience,
             .currentStatus,
@@ -336,9 +341,12 @@ class AppViewModel: ObservableObject {
     /// Calculate the previous step based on the current one (fallback method)
     private func calculatePreviousStep(from currentStep: OnboardingStep) -> OnboardingStep {
         switch currentStep {
-        case .getName:
+        case .countrySelection:
             return .howDidYouHearAboutUs
-            
+
+        case .getName:
+            return .countrySelection
+
         case .welcomeMessage:
             return .getName
             
@@ -471,6 +479,7 @@ class AppViewModel: ObservableObject {
     private func getStepName(_ step: OnboardingStep) -> String {
         switch step {
         case .howDidYouHearAboutUs: return "How Did You Hear About Us"
+        case .countrySelection: return "Country Selection"
         case .getName: return "Get Name"
         case .welcomeMessage(let name): return "Welcome Message (\(name))"
         case .currentStatus: return "Current Status"
@@ -594,6 +603,20 @@ class AppViewModel: ObservableObject {
             )
 
             print("✅ Received \(onetOccupations.count) O*NET career matches from Recipe D v4.0")
+
+            // If user is Canadian, enrich with NOC data
+            if userCountry.usesNOC {
+                print("🇨🇦 Enriching careers with Canadian NOC context...")
+                let onetCodes = onetOccupations.map { $0.onetSocCode }
+                let canadianData = try await snowflakeService.getCanadianOccupations(onetCodes: onetCodes)
+
+                // Store Canadian context for later use
+                await MainActor.run {
+                    canadianOccupationData = canadianData
+                }
+
+                print("✅ Enriched \(canadianData.filter { $0.value.hasCanadianMapping }.count)/\(onetCodes.count) careers with Canadian data")
+            }
 
             // Convert O*NET occupations to CareerTrack objects
             await MainActor.run {

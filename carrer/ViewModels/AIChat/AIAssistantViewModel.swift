@@ -131,6 +131,8 @@ class AIAssistantViewModel: ObservableObject {
         switch step {
         case .howDidYouHearAboutUs:
             return "referral"
+        case .countrySelection:
+            return "country"
         case .getName:
             return "name"
         case .welcomeMessage:
@@ -165,7 +167,10 @@ class AIAssistantViewModel: ObservableObject {
         switch step {
         case .howDidYouHearAboutUs:
             return "Need help with how you heard about us? I can explain the options and why we're asking."
-            
+
+        case .countrySelection:
+            return "Need help choosing your country? I can explain how we use this information to provide relevant career information."
+
         case .getName:
             return "Hi! Need help entering your name? I'm here to assist you with the onboarding process."
             

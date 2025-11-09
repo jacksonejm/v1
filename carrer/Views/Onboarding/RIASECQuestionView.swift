@@ -13,21 +13,19 @@ struct RIASECQuestionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Description
-            Text("How much do you agree with each statement? This will help us understand your \(dimension.rawValue.lowercased()) interests.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+        VStack(spacing: Spacing.large) {
+            Text("Rate each statement to map how strongly you identify with this interest area.")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.textSecondary)
                 .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
 
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: Spacing.large) {
                     ForEach(questions, id: \.self) { question in
                         questionCard(for: question)
                     }
                 }
-                .padding(.top, 4)
+                .padding(.vertical, Spacing.small)
             }
         }
         .onAppear {
@@ -38,63 +36,62 @@ struct RIASECQuestionView: View {
     }
 
     private func questionCard(for question: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             Text(question)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(AppColors.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-
-            HStack(spacing: 0) {
-                ForEach(1..<6) { rating in
-                    if rating > 1 {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 2)
-                            .padding(.horizontal, 4)
-                    }
+            HStack(spacing: Spacing.medium) {
+                ForEach(1...5, id: \.self) { rating in
+                    let isSelected = responses[question] == rating
 
                     Button(action: {
                         responses[question] = rating
                         updateRIASECResponses()
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(responses[question] == rating ? AppColors.primary : Color.gray.opacity(0.15))
-                                .frame(width: 42, height: 42)
-                                .overlay(
-                                    Circle()
-                                        .stroke(AppColors.primary, lineWidth: responses[question] == rating ? 3 : 0)
-                                )
-                                .shadow(
-                                    color: responses[question] == rating ? AppColors.primary.opacity(0.3) : Color.clear,
-                                    radius: 3,
-                                    x: 0,
-                                    y: 2
-                                )
-
-                            Text("\(rating)")
-                                .foregroundColor(responses[question] == rating ? .white : .primary)
-                                .font(.system(size: 16, weight: .semibold))
-                        }
+                        Text("\(rating)")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(isSelected ? .white : AppColors.textPrimary)
+                            .frame(width: 48, height: 48)
+                            .background(
+                                Circle()
+                                    .fill(AppColors.surfaceSecondary.opacity(0.85))
+                                    .overlay(
+                                        Circle()
+                                            .fill(AppGradient.hero)
+                                            .opacity(isSelected ? 1 : 0)
+                                    )
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(isSelected ? Color.white.opacity(0.7) : AppColors.surfaceVariant.opacity(0.6), lineWidth: isSelected ? 1 : 0)
+                            )
+                            .shadow(color: isSelected ? AppShadow.subtle : Color.clear, radius: isSelected ? 10 : 0, x: 0, y: isSelected ? 6 : 0)
                     }
-                    .frame(maxWidth: .infinity)
+                    .buttonStyle(.plain)
                 }
             }
 
             HStack {
                 Text("Strongly Disagree")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(AppColors.textSecondary)
                 Spacer()
                 Text("Strongly Agree")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(AppColors.textSecondary)
             }
         }
-        .padding(12)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
+        .padding(Spacing.large)
+        .background(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .fill(AppColors.surfaceSecondary.opacity(0.75))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                .strokeBorder(AppColors.surfaceVariant.opacity(0.4), lineWidth: 1)
+        )
     }
     
     private func updateRIASECResponses() {

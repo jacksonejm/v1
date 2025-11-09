@@ -11,8 +11,43 @@ struct ONetCareerDetailView: View {
     @State private var showMatchBreakdown = false
     @State private var showAddToTrack = false
 
+    // Access to app state for Canadian context
+    private var appViewModel: AppViewModel {
+        tracksViewModel.appViewModel
+    }
+
+    private var canadianOccupation: CanadianOccupation? {
+        guard let onetCode = careerTrack.onetCode else { return nil }
+        return appViewModel.canadianOccupationData[onetCode]
+    }
+
     private var isAlreadyTracked: Bool {
         tracksViewModel.isTracked(careerId: careerTrack.id)
+    }
+
+    // Seamless data accessors that blend Canadian and O*NET data
+    private var displayTitle: String {
+        if appViewModel.userCountry.usesNOC, let canadianTitle = canadianOccupation?.canadianTitle {
+            return canadianTitle
+        }
+        return careerTrack.title
+    }
+
+    private var displayDescription: String? {
+        if appViewModel.userCountry.usesNOC, let canadianDesc = canadianOccupation?.description {
+            return canadianDesc
+        }
+        return careerTrack.onetDescription
+    }
+
+    private var displayCode: String? {
+        if appViewModel.userCountry.usesNOC, let nocCode = canadianOccupation?.nocCode {
+            return "NOC " + nocCode
+        }
+        if let onetCode = careerTrack.onetCode {
+            return "O*NET " + onetCode
+        }
+        return nil
     }
 
     var body: some View {
@@ -30,8 +65,26 @@ struct ONetCareerDetailView: View {
                 }
 
                 // Description
-                if let description = careerTrack.onetDescription {
+                if let description = displayDescription {
                     descriptionSection(description: description)
+                }
+
+                // Additional Canadian sections (seamlessly integrated)
+                if appViewModel.userCountry.usesNOC, let canadianOcc = canadianOccupation {
+                    // French title
+                    if let frenchTitle = canadianOcc.canadianTitleFr {
+                        frenchTitleSection(title: frenchTitle)
+                    }
+
+                    // Employment Requirements
+                    if !canadianOcc.requirementsArray.isEmpty {
+                        requirementsSection(requirements: canadianOcc.requirementsArray)
+                    }
+
+                    // Main Duties
+                    if !canadianOcc.dutiesArray.isEmpty {
+                        dutiesSection(duties: canadianOcc.dutiesArray)
+                    }
                 }
 
                 // Skills Section
@@ -47,11 +100,8 @@ struct ONetCareerDetailView: View {
                     technologiesSection(technologies: jobSearch.technologies)
                 }
 
-                // Alternate Job Titles
-                if let jobSearch = viewModel.jobSearchStrategy,
-                   !jobSearch.alternateTitles.isEmpty {
-                    alternateTitlesSection(titles: jobSearch.alternateTitles)
-                }
+                // Alternate Job Titles (blend Canadian and O*NET)
+                alternateTitlesSection
 
                 // Job Search Links
                 if let jobSearch = viewModel.jobSearchStrategy {
@@ -63,7 +113,7 @@ struct ONetCareerDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(careerTrack.title)
+        .navigationTitle(displayTitle)
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showMatchBreakdown) {
             MatchBreakdownView(careerTrack: careerTrack)
@@ -170,7 +220,7 @@ struct ONetCareerDetailView: View {
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(careerTrack.title)
+            Text(displayTitle)
                 .font(.title)
                 .fontWeight(.bold)
 
@@ -199,8 +249,8 @@ struct ONetCareerDetailView: View {
                 }
             }
 
-            if let onetCode = careerTrack.onetCode {
-                Text("O*NET Code: \(onetCode)")
+            if let code = displayCode {
+                Text(code)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -295,26 +345,6 @@ struct ONetCareerDetailView: View {
         }
     }
 
-    private func alternateTitlesSection(titles: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Also Known As")
-                .font(.headline)
-
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(titles.prefix(5), id: \.self) { title in
-                    HStack {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .foregroundColor(AppColors.primary)
-                            .font(.caption)
-
-                        Text(title)
-                            .font(.subheadline)
-                    }
-                }
-            }
-        }
-    }
-
     private func jobSearchSection(links: JobBoardLinks) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Find Jobs")
@@ -328,15 +358,127 @@ struct ONetCareerDetailView: View {
         }
     }
 
-    private var attributionSection: some View {
-        VStack(spacing: 4) {
-            Text("Powered by O*NET")
-                .font(.caption)
+    private func frenchTitleSection(title: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Titre français")
+                .font(.subheadline)
+                .fontWeight(.semibold)
                 .foregroundColor(.secondary)
 
-            Text("U.S. Department of Labor")
-                .font(.caption2)
+            Text(title)
+                .font(.body)
+                .italic()
                 .foregroundColor(.secondary)
+        }
+    }
+
+    private func requirementsSection(requirements: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Employment Requirements")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(requirements.enumerated()), id: \.offset) { _, requirement in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.body)
+                            .foregroundColor(AppColors.primary)
+                        Text(requirement)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private func dutiesSection(duties: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Main Duties")
+                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(duties.prefix(5).enumerated()), id: \.offset) { _, duty in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("•")
+                            .font(.body)
+                            .foregroundColor(AppColors.primary)
+                        Text(duty)
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var alternateTitlesSection: some View {
+        let titles = blendedAlternateTitles
+        if !titles.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Also Known As")
+                    .font(.headline)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(titles.prefix(5).enumerated()), id: \.offset) { index, title in
+                        HStack {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .foregroundColor(AppColors.primary)
+                                .font(.caption)
+
+                            Text(title)
+                                .font(.subheadline)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var blendedAlternateTitles: [String] {
+        var titles: [String] = []
+
+        // Add Canadian example titles if available
+        if appViewModel.userCountry.usesNOC, let canadianOcc = canadianOccupation {
+            titles.append(contentsOf: canadianOcc.exampleTitlesArray)
+        }
+
+        // Add O*NET alternate titles
+        if let jobSearch = viewModel.jobSearchStrategy {
+            titles.append(contentsOf: jobSearch.alternateTitles)
+        }
+
+        // Clean up titles: trim whitespace, filter invalid entries, remove duplicates
+        let cleanedTitles = titles
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && $0.count >= 3 } // Must be at least 3 characters
+            .filter { !$0.allSatisfy { $0.isNumber } } // Exclude numeric-only strings like "1", "2"
+            .filter { $0 != careerTrack.title } // Exclude the main career title
+
+        return Array(Set(cleanedTitles)).sorted() // Remove duplicates and sort
+    }
+
+    private var attributionSection: some View {
+        VStack(spacing: 4) {
+            if appViewModel.userCountry.usesNOC, canadianOccupation != nil {
+                Text("Data from Canadian OaSIS & O*NET")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("Employment and Social Development Canada • U.S. Department of Labor")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Powered by O*NET")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("U.S. Department of Labor")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 24)

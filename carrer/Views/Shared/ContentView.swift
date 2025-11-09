@@ -28,6 +28,13 @@ struct ContentView: View {
                         ConversationalOnboardingView(onboardingStore: onboardingStore)
                             .environmentObject(viewModel)
                             .environmentObject(onboardingStore)
+                    case .onboardingV2:
+                        OnboardingV2View(
+                            appViewModel: viewModel,
+                            onComplete: {
+                                viewModel.appFlowState = .dashboard
+                            }
+                        )
                     case .login:
                         LoginView(viewModel: viewModel)
                     case .dashboard:

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "R.Q1",
+    "dim": "R",
+    "text": "I enjoy working with tools and machinery",
+    "reverse": false
+  },
+  {
+    "id": "R.Q2",
+    "dim": "R",
+    "text": "I prefer office work over physical tasks",
+    "reverse": true
+  },
+  {
+    "id": "R.Q3",
+    "dim": "R",
+    "text": "I like fixing or building things",
+    "reverse": false
+  },
+  {
+    "id": "R.Q4",
+    "dim": "R",
+    "text": "I avoid hands-on activities",
+    "reverse": true
+  },
+  {
+    "id": "R.Q5",
+    "dim": "R",
+    "text": "I enjoy working outdoors or with nature",
+    "reverse": false
+  },
+  {
+    "id": "I.Q1",
+    "dim": "I",
+    "text": "I like to analyze data and solve problems",
+    "reverse": false
+  },
+  {
+    "id": "I.Q2",
+    "dim": "I",
+    "text": "I get bored by research tasks",
+    "reverse": true
+  },
+  {
+    "id": "I.Q3",
+    "dim": "I",
+    "text": "I enjoy learning how things work",
+    "reverse": false
+  },
+  {
+    "id": "I.Q4",
+    "dim": "I",
+    "text": "I avoid complex or technical topics",
+    "reverse": true
+  },
+  {
+    "id": "I.Q5",
+    "dim": "I",
+    "text": "I enjoy investigating new ideas and concepts",
+    "reverse": false
+  },
+  {
+    "id": "A.Q1",
+    "dim": "A",
+    "text": "I enjoy expressing myself through art or music",
+    "reverse": false
+  },
+  {
+    "id": "A.Q2",
+    "dim": "A",
+    "text": "I prefer structured tasks over creative projects",
+    "reverse": true
+  },
+  {
+    "id": "A.Q3",
+    "dim": "A",
+    "text": "I like designing or creating new things",
+    "reverse": false
+  },
+  {
+    "id": "A.Q4",
+    "dim": "A",
+    "text": "I find artistic activities uninteresting",
+    "reverse": true
+  },
+  {
+    "id": "A.Q5",
+    "dim": "A",
+    "text": "I enjoy writing, drawing, or performing",
+    "reverse": false
+  },
+  {
+    "id": "S.Q1",
+    "dim": "S",
+    "text": "I find satisfaction in helping others",
+    "reverse": false
+  },
+  {
+    "id": "S.Q2",
+    "dim": "S",
+    "text": "I prefer working alone rather than with people",
+    "reverse": true
+  },
+  {
+    "id": "S.Q3",
+    "dim": "S",
+    "text": "I enjoy teaching or training others",
+    "reverse": false
+  },
+  {
+    "id": "S.Q4",
+    "dim": "S",
+    "text": "I avoid situations where I need to care for others",
+    "reverse": true
+  },
+  {
+    "id": "S.Q5",
+    "dim": "S",
+    "text": "I like working in team environments",
+    "reverse": false
+  },
+  {
+    "id": "E.Q1",
+    "dim": "E",
+    "text": "I enjoy leading teams and taking charge",
+    "reverse": false
+  },
+  {
+    "id": "E.Q2",
+    "dim": "E",
+    "text": "I prefer following rather than leading",
+    "reverse": true
+  },
+  {
+    "id": "E.Q3",
+    "dim": "E",
+    "text": "I like persuading others and selling ideas",
+    "reverse": false
+  },
+  {
+    "id": "E.Q4",
+    "dim": "E",
+    "text": "I avoid taking risks in business or leadership",
+    "reverse": true
+  },
+  {
+    "id": "E.Q5",
+    "dim": "E",
+    "text": "I enjoy managing projects and people",
+    "reverse": false
+  },
+  {
+    "id": "C.Q1",
+    "dim": "C",
+    "text": "I prefer working with clear rules and procedures",
+    "reverse": false
+  },
+  {
+    "id": "C.Q2",
+    "dim": "C",
+    "text": "I dislike detailed, organized work",
+    "reverse": true
+  },
+  {
+    "id": "C.Q3",
+    "dim": "C",
+    "text": "I enjoy organizing and managing data",
+    "reverse": false
+  },
+  {
+    "id": "C.Q4",
+    "dim": "C",
+    "text": "I prefer flexible, unstructured tasks",
+    "reverse": true
+  },
+  {
+    "id": "C.Q5",
+    "dim": "C",
+    "text": "I like working with numbers and records",
+    "reverse": false
+  }
+]

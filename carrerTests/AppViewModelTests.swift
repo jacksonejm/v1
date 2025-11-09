@@ -101,7 +101,7 @@ final class AppViewModelTests: XCTestCase {
 
         // Verify dimension-specific responses were stored
         if let allResponses = viewModel.userData[.riasecResponses] as? [String: [String: Int]],
-           let realisticData = allResponses["R"] {
+           let realisticData = allResponses["Realistic"] {
             XCTAssertEqual(realisticData.count, 3)
         } else {
             XCTFail("RIASEC responses not stored correctly")

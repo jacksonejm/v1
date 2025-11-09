@@ -8,6 +8,7 @@ enum AppFlowState: Hashable {
     case onboarding(step: OnboardingStep)
     case onboardingHelp(step: OnboardingStep) // New state to track when help is being shown
     case conversationalOnboarding
+    case onboardingV2 // New streamlined onboarding with autosave
     
     func hash(into hasher: inout Hasher) {
         switch self {
@@ -27,6 +28,8 @@ enum AppFlowState: Hashable {
             hasher.combine(5)
         case .conversationalOnboarding:
             hasher.combine(6)
+        case .onboardingV2:
+            hasher.combine(7)
         }
     }
     
@@ -45,6 +48,8 @@ enum AppFlowState: Hashable {
         case (.onboardingModeSelection, .onboardingModeSelection):
             return true
         case (.conversationalOnboarding, .conversationalOnboarding):
+            return true
+        case (.onboardingV2, .onboardingV2):
             return true
         default:
             return false

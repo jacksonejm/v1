@@ -53,3 +53,49 @@ struct AppColors {
     // Alias for primary
     static let primary = primaryBlue
 }
+
+// MARK: - Shared Style Tokens
+
+enum AppCornerRadius {
+    static let pill: CGFloat = 22
+    static let card: CGFloat = 20
+    static let section: CGFloat = 28
+}
+
+enum AppShadow {
+    static let subtle = Color.black.opacity(0.05)
+    static let elevated = Color.black.opacity(0.12)
+}
+
+enum AppGradient {
+    static let hero = LinearGradient(
+        colors: [AppColors.primaryBlue, AppColors.accentPurple],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let background = LinearGradient(
+        colors: [Color.white, AppColors.surfaceSecondary.opacity(0.6)],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+}
+
+private struct ModernCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(Spacing.xl)
+            .background(
+                RoundedRectangle(cornerRadius: AppCornerRadius.card, style: .continuous)
+                    .fill(AppColors.surfacePrimary)
+                    .shadow(color: AppShadow.subtle, radius: 18, x: 0, y: 16)
+                    .shadow(color: AppShadow.subtle, radius: 4, x: 0, y: 2)
+            )
+    }
+}
+
+extension View {
+    func modernCard() -> some View {
+        modifier(ModernCardModifier())
+    }
+}

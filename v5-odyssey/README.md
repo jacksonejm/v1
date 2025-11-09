@@ -7,14 +7,16 @@
 ## 📋 Quick Navigation
 
 ### 🎯 Start Here
+- **[📊 PROJECT STATUS](PROJECT_STATUS.md)** - Live progress tracker (UPDATED CONTINUOUSLY)
 - **[v5.0 Complete Specification](docs/v5.md)** - Full v5.0 "Odyssey" specification (READ THIS FIRST)
-- **[Phase 0 Final Summary](docs/phase0/PHASE0_FINAL_SUMMARY.md)** - Current status and next steps
+- **[Phase 0 Completion Report](docs/phase0/PHASE0_COMPLETION_REPORT.md)** - Phase 0 final deliverable
 
 ### 📂 Documentation Structure
 
 ```
 v5-odyssey/
 ├── README.md (this file)
+├── PROJECT_STATUS.md                            # 📊 Live progress tracker
 ├── docs/
 │   ├── v5.md                                    # Main v5.0 specification
 │   ├── MYPATH_UX_UI_DOCUMENTATION.md           # Current UX documentation
@@ -28,11 +30,11 @@ v5-odyssey/
 
 ## 📚 Documentation Index
 
-### 🚀 Phase 0: Prerequisites (CURRENT - COMPLETE)
+### 🚀 Phase 0: Prerequisites ✅ COMPLETE
 
 Phase 0 stabilizes v4.0 and lays groundwork for v5.0 implementation.
 
-**Status:** ✅ Functionally Complete | ⚠️ Test files need Xcode addition
+**Status:** ✅ COMPLETE (Oct 18, 2025)
 
 | Document | Description | Status |
 |----------|-------------|--------|
@@ -48,7 +50,32 @@ Phase 0 stabilizes v4.0 and lays groundwork for v5.0 implementation.
 - ✅ Country selection UI in onboarding
 - ✅ All documentation complete
 
-**Next Action:** Add test files to Xcode project (5 min) - See [instructions](docs/phase0/PHASE0_TEST_FILES_INSTRUCTIONS.md)
+**Next Action:** ✅ Phase 0 Complete - Proceed to Phase 1
+
+---
+
+### 🏗️ Phase 1: Foundation 🚀 IN PROGRESS
+
+Phase 1 builds the database schema and service layer for v5.0 features.
+
+**Status:** 🚀 IN PROGRESS (Started Oct 21, 2025 | Target: Nov 15, 2025)
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [PHASE1_KICKOFF.md](docs/phase1/PHASE1_KICKOFF.md) | Complete Phase 1 specification | ✅ Complete |
+| PHASE1_DATABASE_SCHEMA.md | Database design & ERD | 🔄 In Progress |
+| PHASE1_API_DOCUMENTATION.md | API contracts & examples | 📋 Planned |
+| PHASE1_COMPLETION_REPORT.md | Final deliverable report | 📋 Planned |
+
+**Phase 1 Deliverables:**
+- 🔄 6 Snowflake tables (SCENARIO_TEMPLATES, SCENARIO_RUNS, BEHAVIORAL_SIGNALS, USER_SKILLS, USER_EVIDENCE, CAMPUS_OPPORTUNITIES)
+- 📋 4 stored procedures (SP_GET_SKILL_GAPS, SP_GET_TRAJECTORIES, SP_INGEST_SCENARIO_RUN, SP_GET_OPPORTUNITIES)
+- 📋 4 Swift service classes (TrajectoryService, SimulationService, SkillGraphService, OpportunityService)
+- 📋 30+ integration tests
+- 📋 Complete API documentation
+
+**Current Week (Oct 21-25):** Database schema design
+**Next Week (Oct 28-Nov 3):** Stored procedure implementation
 
 ---
 

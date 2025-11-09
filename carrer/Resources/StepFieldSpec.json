@@ -22,7 +22,7 @@
   ],
   "steps": {
     "howDidYouHearAboutUs": {
-      "title": "Welcome\! How Did You Hear About Us?",
+      "title": "Welcome! How Did You Hear About Us?",
       "fields": ["howDidYouHearAboutUs"],
       "required": ["howDidYouHearAboutUs"],
       "nextStep": "getName",
@@ -36,7 +36,7 @@
       "isInputStep": true
     },
     "welcomeMessage": {
-      "title": "Welcome\!",
+      "title": "Welcome!",
       "fields": [],
       "required": [],
       "nextStep": "currentStatus",
@@ -66,7 +66,7 @@
       "isInputStep": true
     },
     "motivationalMessage": {
-      "title": "You're Doing Great\!",
+      "title": "You're Doing Great!",
       "fields": [],
       "required": [],
       "nextStep": "interests",
@@ -169,10 +169,10 @@
       "needsProcessing": true
     },
     "completionScreen": {
-      "title": "All Done\!",
+      "title": "All Done!",
       "fields": [],
       "required": [],
-      "nextStep": "",
+      "nextStep": "dashboard",
       "isInputStep": false,
       "isLastStep": true
     }
@@ -237,10 +237,6 @@
         "Graduate Student",
         "Not Currently a Student"
       ],
-      "dependsOn": {
-        "field": "currentStatus",
-        "includes": "Student"
-      },
       "validation": {
         "required": true
       }
@@ -432,4 +428,3 @@
     }
   }
 }
-EOL < /dev/null
