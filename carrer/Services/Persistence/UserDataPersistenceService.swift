@@ -141,7 +141,7 @@ class UserDataPersistenceService {
             } else if let arrayValue = value as? [String] {
                 userData[userDataKey] = arrayValue
             } else if let dictValue = value as? [String: Any] {
-                userData[userDataKey] = dictValue
+                userData[userDataKey] = dictValue as AnyHashable
             } else {
                 // Store as-is if type is unknown
                 userData[userDataKey] = value as? AnyHashable
